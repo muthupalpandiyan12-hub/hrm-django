@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM System — Sign In</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+        body { min-height: 100vh; display: flex; background: #f0f0f0; margin: 0; }
+
+        /* ── LEFT PANEL ── */
+        .left-panel {
+            width: 46%;
+            background: #1A1A1A;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 60px 48px;
+            position: relative; overflow: hidden;
+        }
+        /* Red diagonal slash accent */
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 340px; height: 340px;
+            border-radius: 50%;
+            background: rgba(230,0,0,0.18);
+        }
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -60px;
+            width: 260px; height: 260px;
+            border-radius: 50%;
+            background: rgba(255,204,0,0.08);
+        }
+        /* Vi-style logo mark */
+        .vi-logo-wrap {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 32px;
+        }
+        .vi-logo-icon {
+            width: 60px; height: 60px;
+            background: #E60000;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; color: #fff;
+            box-shadow: 0 8px 24px rgba(230,0,0,0.4);
+        }
+        .vi-brand-text .brand-name {
+            font-size: 1.6rem; font-weight: 800; color: #fff; line-height: 1;
+        }
+        .vi-brand-text .brand-sub {
+            font-size: 0.72rem; color: #888; font-weight: 500;
+            letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px;
+        }
+
+        .left-content { position: relative; z-index: 1; width: 100%; }
+        .left-content h2 {
+            color: #fff; font-weight: 800; font-size: 1.65rem;
+            margin-bottom: 10px; line-height: 1.3;
+        }
+        .left-content h2 span { color: #E60000; }
+        .left-content p { color: #888; font-size: 0.88rem; line-height: 1.7; margin-bottom: 32px; }
+
+        .feature-item {
+            display: flex; align-items: center; gap: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px; padding: 13px 16px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+        .feature-item:hover { background: rgba(255,255,255,0.07); }
+        .feat-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: rgba(230,0,0,0.15);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .feat-icon i { font-size: 1rem; color: #E60000; }
+        .feature-item .feat-label { color: #ccc; font-size: 0.84rem; font-weight: 500; }
+        .feature-item .feat-sub { color: #666; font-size: 0.72rem; }
+
+        /* Yellow divider bar */
+        .yellow-bar {
+            width: 40px; height: 4px;
+            background: #FFCC00;
+            border-radius: 2px;
+            margin-bottom: 16px;
+        }
+
+        /* ── RIGHT PANEL ── */
+        .right-panel {
+            flex: 1;
+            display: flex; align-items: center; justify-content: center;
+            padding: 40px; background: #fff;
+        }
+        .login-box { width: 100%; max-width: 400px; }
+
+        /* Vi style top red stripe */
+        .login-header-stripe {
+            width: 48px; height: 5px;
+            background: #E60000;
+            border-radius: 3px;
+            margin-bottom: 20px;
+        }
+        .login-box h2 { font-size: 1.7rem; font-weight: 800; color: #1A1A1A; margin-bottom: 4px; }
+        .login-box .subtitle { color: #888; font-size: 0.86rem; margin-bottom: 28px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 6px; display: block; }
+        .input-wrap { position: relative; }
+        .input-wrap i.prefix {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: #aaa; font-size: 1rem; z-index: 1;
+        }
+        .input-wrap input {
+            width: 100%; padding: 12px 14px 12px 42px;
+            border: 1.5px solid #e8e8e8; border-radius: 12px;
+            font-size: 0.88rem; font-family: 'Poppins', sans-serif;
+            background: #fafafa; transition: all 0.15s; outline: none; color: #1A1A1A;
+        }
+        .input-wrap input:focus {
+            border-color: #E60000;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(230,0,0,0.08);
+        }
+
+        .btn-vi-login {
+            width: 100%; padding: 13px;
+            background: #E60000;
+            color: #fff; border: none; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 4px 16px rgba(230,0,0,0.35);
+            letter-spacing: 0.02em;
+        }
+        .btn-vi-login:hover {
+            background: #CC0000;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(230,0,0,0.45);
+        }
+
+        .error-alert {
+            background: #fff5f5; border: 1.5px solid #fecaca; color: #dc2626;
+            border-radius: 10px; padding: 10px 14px; font-size: 0.83rem;
+            display: flex; align-items: center; gap: 8px; margin-bottom: 18px;
+        }
+        .hint-box {
+            background: #fffbeb; border: 1.5px solid #FFCC00;
+            border-radius: 10px; padding: 12px 14px;
+            margin-top: 18px; font-size: 0.8rem; color: #92400e;
+        }
+        .hint-box strong { color: #78350f; }
+
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 20px 0; color: #ccc; font-size: 0.78rem;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: #e8e8e8;
+        }
+
+        @media (max-width: 768px) { .left-panel { display: none; } }
+    </style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+    <!-- Logo -->
+    <div class="vi-logo-wrap">
+        <div class="vi-logo-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="vi-brand-text">
+            <div class="brand-name">HRM System</div>
+            <div class="brand-sub">Human Resource Management</div>
+        </div>
+    </div>
+
+    <div class="left-content">
+        <div class="yellow-bar"></div>
+        <h2>Manage your <span>workforce</span><br>smarter & faster.</h2>
+        <p>A complete HR platform built for modern teams — track attendance, manage leaves, process payroll and more.</p>
+
+        <div class="feature-item">
+            <div class="feat-icon"><i class="bi bi-person-lines-fill"></i></div>
+            <div><div class="feat-label">Employee Management</div><div class="feat-sub">Profiles, departments & roles</div></div>
+        </div>
+        <div class="feature-item">
+            <div class="feat-icon"><i class="bi bi-fingerprint"></i></div>
+            <div><div class="feat-label">Punch In / Out</div><div class="feat-sub">Real-time work session tracking</div></div>
+        </div>
+        <div class="feature-item">
+            <div class="feat-icon"><i class="bi bi-calendar-check"></i></div>
+            <div><div class="feat-label">Attendance Calendar</div><div class="feat-sub">Visual monthly attendance view</div></div>
+        </div>
+        <div class="feature-item">
+            <div class="feat-icon"><i class="bi bi-cash-stack"></i></div>
+            <div><div class="feat-label">Payroll & Payslips</div><div class="feat-sub">PDF payslips & Excel exports</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+    <div class="login-box">
+        <div class="login-header-stripe"></div>
+        <h2>Welcome back 👋</h2>
+        <p class="subtitle">Sign in to your HRM account</p>
+
+        {% if form.errors %}
+        <div class="error-alert">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-wrap">
+                    <i class="bi bi-person prefix"></i>
+                    <input type="text" name="username" placeholder="Enter your username" required autofocus>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock prefix"></i>
+                    <input type="password" name="password" placeholder="Enter your password" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-vi-login mt-2">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+        </form>
+
+        <div class="hint-box">
+            <strong><i class="bi bi-info-circle me-1"></i>Default Admin Credentials</strong><br>
+            Username: <b>admin</b> &nbsp;·&nbsp; Password: <b>admin123</b>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

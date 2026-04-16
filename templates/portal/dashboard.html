@@ -1,0 +1,275 @@
+{% extends 'portal/base_portal.html' %}
+{% block title %}My Dashboard{% endblock %}
+{% block nav_home %}active{% endblock %}
+{% block page_title %}My Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ═══ WELCOME BANNER ═══ -->
+<div class="card mb-4" style="background:linear-gradient(135deg,#1A1A1A 0%,#2A2A2A 60%,#E60000 100%);color:#fff;border-radius:18px;overflow:hidden;position:relative;">
+    <!-- decorative circles -->
+    <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
+    <div style="position:absolute;bottom:-60px;right:80px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
+
+    <div class="p-4 d-flex align-items-center gap-4" style="position:relative;z-index:1;">
+        <div style="width:64px;height:64px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.25);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;flex-shrink:0;">
+            {{ employee.name|slice:":1"|upper }}
+        </div>
+        <div>
+            <h4 style="margin:0;font-weight:800;font-size:1.25rem;">Welcome back, {{ employee.name }}! 👋</h4>
+            <p style="margin:4px 0 0;opacity:0.7;font-size:0.85rem;">
+                <i class="bi bi-briefcase me-1"></i>{{ employee.position|default:"Employee" }}
+                {% if employee.department %} &nbsp;·&nbsp; <i class="bi bi-building me-1"></i>{{ employee.department }}{% endif %}
+                &nbsp;·&nbsp; <i class="bi bi-credit-card-2-front me-1"></i>{{ employee.employee_id }}
+            </p>
+        </div>
+        <div class="ms-auto text-end d-none d-md-block" style="flex-shrink:0;">
+            <div style="font-size:0.7rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.06em;">Today's Date</div>
+            <div style="font-weight:800;font-size:1.1rem;">{% now "d M Y" %}</div>
+            <div style="font-size:0.78rem;opacity:0.65;">{% now "l" %}</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ QUICK STATUS ROW ═══ -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#E60000,#CC0000);">
+            <div class="stat-label">Days Present</div>
+            <div class="stat-number">{{ total_present }}</div>
+            <div class="stat-icon"><i class="bi bi-calendar-check-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#FFCC00,#E6B800);color:#1A1A1A;">
+            <div class="stat-label">Pending Leaves</div>
+            <div class="stat-number">{{ pending_leaves }}</div>
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#2A2A2A,#1A1A1A);">
+            <div class="stat-label">Approved Leaves</div>
+            <div class="stat-number">{{ approved_leaves }}</div>
+            <div class="stat-icon"><i class="bi bi-patch-check-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        {% if latest_payslip %}
+        <div class="stat-card" style="background:linear-gradient(135deg,#555,#3A3A3A);">
+            <div class="stat-label">Last Net Pay</div>
+            <div class="stat-number" style="font-size:1.4rem;">₹{{ latest_payslip.net_salary }}</div>
+            <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+        </div>
+        {% else %}
+        <div class="stat-card" style="background:linear-gradient(135deg,#555,#3A3A3A);">
+            <div class="stat-label">Payslip</div>
+            <div class="stat-number" style="font-size:1.1rem;">—</div>
+            <div class="stat-icon"><i class="bi bi-cash-stack"></i></div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ═══ TODAY'S STATUS + QUICK ACTIONS ═══ -->
+<div class="row g-4 mb-4">
+
+    <!-- Today's Attendance Status -->
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="width:6px;height:22px;background:#E60000;border-radius:3px;"></div>
+                <span style="font-weight:700;font-size:0.92rem;color:#0f172a;">Today's Attendance</span>
+                <span style="margin-left:auto;font-size:0.75rem;color:#94a3b8;">{% now "d M Y" %}</span>
+            </div>
+            {% if today_attendance %}
+            <div style="background:#f8fafc;border-radius:12px;padding:16px;">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div style="width:42px;height:42px;border-radius:12px;background:{% if today_attendance.status == 'present' %}#dcfce7{% elif today_attendance.status == 'absent' %}#fee2e2{% elif today_attendance.status == 'late' %}#dbeafe{% else %}#fef9c3{% endif %};display:flex;align-items:center;justify-content:center;">
+                        <i class="bi {% if today_attendance.status == 'present' %}bi-check-circle-fill text-success{% elif today_attendance.status == 'absent' %}bi-x-circle-fill text-danger{% elif today_attendance.status == 'late' %}bi-alarm-fill text-primary{% else %}bi-clock-fill text-warning{% endif %}" style="font-size:1.2rem;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:#94a3b8;font-weight:600;text-transform:uppercase;">Status</div>
+                        <span class="badge-status badge-{{ today_attendance.status }}">{{ today_attendance.get_status_display }}</span>
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div style="background:#fff;border-radius:8px;padding:8px 12px;border:1px solid #e2e8f0;">
+                            <div style="font-size:0.68rem;color:#94a3b8;font-weight:600;text-transform:uppercase;">Check In</div>
+                            <div style="font-weight:700;color:#10b981;font-size:0.92rem;">{{ today_attendance.check_in|default:"—" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:#fff;border-radius:8px;padding:8px 12px;border:1px solid #e2e8f0;">
+                            <div style="font-size:0.68rem;color:#94a3b8;font-weight:600;text-transform:uppercase;">Check Out</div>
+                            <div style="font-weight:700;color:#ef4444;font-size:0.92rem;">{{ today_attendance.check_out|default:"—" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="background:#f8fafc;border-radius:12px;padding:20px;text-align:center;">
+                <i class="bi bi-calendar-x" style="font-size:2rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
+                <p style="color:#94a3b8;font-size:0.85rem;margin:0;">No attendance marked today.</p>
+                <a href="/punch/" class="btn btn-sm btn-green mt-3" style="border-radius:8px;padding:6px 18px;">
+                    <i class="bi bi-fingerprint me-1"></i> Go to Punch
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-md-6">
+        <div class="card p-4 h-100">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="width:6px;height:22px;background:#E60000;border-radius:3px;"></div>
+                <span style="font-weight:700;font-size:0.92rem;color:#0f172a;">Quick Actions</span>
+            </div>
+            <div class="row g-2">
+                <div class="col-6">
+                    <a href="/punch/" style="text-decoration:none;">
+                        <div class="dm-action-card" style="background:linear-gradient(135deg,#FFF0F0,#FFE0E0);border:1px solid #FFCCCC;border-radius:12px;padding:16px;text-align:center;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <i class="bi bi-fingerprint" style="font-size:1.5rem;color:#E60000;display:block;margin-bottom:6px;"></i>
+                            <div class="dm-action-label" style="font-size:0.8rem;font-weight:700;color:#1A1A1A;">Punch In/Out</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="/portal/leaves/" style="text-decoration:none;">
+                        <div class="dm-action-card" style="background:linear-gradient(135deg,#FFF9E6,#FFF3CC);border:1px solid #FFCC00;border-radius:12px;padding:16px;text-align:center;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <i class="bi bi-calendar-plus" style="font-size:1.5rem;color:#CC9900;display:block;margin-bottom:6px;"></i>
+                            <div class="dm-action-label" style="font-size:0.8rem;font-weight:700;color:#1A1A1A;">Apply Leave</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="/portal/attendance/" style="text-decoration:none;">
+                        <div class="dm-action-card" style="background:linear-gradient(135deg,#F5F5F5,#EBEBEB);border:1px solid #E0E0E0;border-radius:12px;padding:16px;text-align:center;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <i class="bi bi-calendar-check dm-action-icon-gray" style="font-size:1.5rem;color:#1A1A1A;display:block;margin-bottom:6px;"></i>
+                            <div class="dm-action-label" style="font-size:0.8rem;font-weight:700;color:#1A1A1A;">Attendance</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="/portal/payslips/" style="text-decoration:none;">
+                        <div class="dm-action-card" style="background:linear-gradient(135deg,#F5F5F5,#EBEBEB);border:1px solid #E0E0E0;border-radius:12px;padding:16px;text-align:center;transition:transform 0.15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            <i class="bi bi-receipt dm-action-icon-gray" style="font-size:1.5rem;color:#1A1A1A;display:block;margin-bottom:6px;"></i>
+                            <div class="dm-action-label" style="font-size:0.8rem;font-weight:700;color:#1A1A1A;">My Payslips</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ ANNOUNCEMENTS + HOLIDAYS ═══ -->
+{% if active_announcements or upcoming_holidays %}
+<div class="row g-4 mb-4">
+    {% if active_announcements %}
+    <div class="col-md-{% if upcoming_holidays %}6{% else %}12{% endif %}">
+        <div class="card h-100">
+            <div class="p-4 pb-0 d-flex align-items-center justify-content-between">
+                <span style="font-weight:700;font-size:0.9rem;color:#0f172a;"><i class="bi bi-megaphone-fill me-2" style="color:#E60000;"></i>Announcements</span>
+            </div>
+            <div class="p-3">
+                {% for a in active_announcements|slice:":4" %}
+                <div class="mb-2 p-3 rounded-3" style="background:#f8fafc;border-left:3px solid {% if a.priority == 'urgent' %}#E60000{% elif a.priority == 'high' %}#FFCC00{% elif a.priority == 'medium' %}#1A1A1A{% else %}#ccc{% endif %};">
+                    <div style="font-size:0.84rem;font-weight:700;color:#1e293b;margin-bottom:3px;">
+                        {% if a.priority == 'urgent' %}<span style="background:#fee2e2;color:#dc2626;padding:1px 7px;border-radius:20px;font-size:0.68rem;font-weight:700;margin-right:6px;">Urgent</span>{% endif %}
+                        {{ a.title }}
+                    </div>
+                    <div style="font-size:0.76rem;color:#64748b;">{{ a.content|truncatechars:100 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if upcoming_holidays %}
+    <div class="col-md-{% if active_announcements %}6{% else %}12{% endif %}">
+        <div class="card h-100">
+            <div class="p-4 pb-0">
+                <span style="font-weight:700;font-size:0.9rem;color:#0f172a;"><i class="bi bi-calendar-heart-fill me-2" style="color:#FFCC00;"></i>Upcoming Holidays</span>
+            </div>
+            <div class="p-3">
+                {% for h in upcoming_holidays %}
+                <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:#f8fafc;">
+                    <div style="width:38px;height:38px;border-radius:10px;background:{% if h.holiday_type == 'public' %}#fee2e2{% elif h.holiday_type == 'company' %}#1A1A1A{% else %}#FFF9E6{% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-calendar-event {% if h.holiday_type == 'public' %}text-danger{% elif h.holiday_type == 'company' %}text-white{% else %}text-warning{% endif %}"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.84rem;font-weight:600;color:#1e293b;">{{ h.name }}</div>
+                        <div style="font-size:0.76rem;color:#94a3b8;">{{ h.date|date:"d M Y" }}</div>
+                    </div>
+                    {% with days_until=h.date|timeuntil %}
+                    <span style="font-size:0.72rem;color:#888;font-weight:600;">{{ h.date|timeuntil }} left</span>
+                    {% endwith %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ═══ RECENT RECORDS ═══ -->
+<div class="row g-4">
+
+    <!-- Recent Attendance -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
+                <span style="font-weight:700;font-size:0.9rem;color:#0f172a;"><i class="bi bi-clock-history me-2" style="color:#E60000;"></i>Recent Attendance</span>
+                <a href="/portal/attendance/" style="font-size:0.78rem;color:#E60000;text-decoration:none;font-weight:600;">View Calendar →</a>
+            </div>
+            <div>
+                {% for a in recent_attendance %}
+                <div style="padding:11px 16px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;gap:10px;">
+                    <div style="width:38px;height:38px;border-radius:10px;background:{% if a.status == 'present' %}#dcfce7{% elif a.status == 'absent' %}#fee2e2{% elif a.status == 'late' %}#dbeafe{% else %}#fef9c3{% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi {% if a.status == 'present' %}bi-check-lg text-success{% elif a.status == 'absent' %}bi-x-lg text-danger{% elif a.status == 'late' %}bi-alarm text-primary{% else %}bi-clock text-warning{% endif %}"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.83rem;font-weight:600;color:#0f172a;">{{ a.date|date:"d M Y" }}</div>
+                        <div style="font-size:0.74rem;color:#94a3b8;">In: {{ a.check_in|default:"—" }} &nbsp;·&nbsp; Out: {{ a.check_out|default:"—" }}</div>
+                    </div>
+                    <span class="badge-status badge-{{ a.status }}" style="font-size:0.7rem;">{{ a.get_status_display }}</span>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="padding:30px;"><i class="bi bi-calendar-check" style="font-size:2rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i><p style="color:#94a3b8;margin:0;font-size:0.85rem;">No attendance records yet</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Leaves -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
+                <span style="font-weight:700;font-size:0.9rem;color:#0f172a;"><i class="bi bi-calendar-x me-2" style="color:#CC9900;"></i>Recent Leave Requests</span>
+                <a href="/portal/leaves/" style="font-size:0.78rem;color:#CC9900;text-decoration:none;font-weight:600;">Apply Leave →</a>
+            </div>
+            <div>
+                {% for l in recent_leaves %}
+                <div style="padding:11px 16px;border-bottom:1px solid #f8fafc;display:flex;align-items:center;gap:10px;">
+                    <div style="width:38px;height:38px;border-radius:10px;background:{% if l.status == 'approved' %}#dcfce7{% elif l.status == 'rejected' %}#fee2e2{% else %}#fef9c3{% endif %};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi {% if l.status == 'approved' %}bi-check-circle-fill text-success{% elif l.status == 'rejected' %}bi-x-circle-fill text-danger{% else %}bi-hourglass-split text-warning{% endif %}"></i>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.83rem;font-weight:600;color:#0f172a;">{{ l.leave_type }}</div>
+                        <div style="font-size:0.74rem;color:#94a3b8;">{{ l.start_date }} → {{ l.end_date }} &nbsp;·&nbsp; {{ l.total_days }} day(s)</div>
+                    </div>
+                    <span class="badge-status badge-{{ l.status }}" style="font-size:0.7rem;">{{ l.status|title }}</span>
+                </div>
+                {% empty %}
+                <div class="empty-state" style="padding:30px;"><i class="bi bi-calendar-x" style="font-size:2rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i><p style="color:#94a3b8;margin:0;font-size:0.85rem;">No leave requests yet</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

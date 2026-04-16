@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM System — {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════ DARK MODE ═══════════ */
+        body.dark-mode {
+            background: #0D0D0D !important;
+            --dm-card: #1A1A1A;
+            --dm-border: #2A2A2A;
+            --dm-text: #E0E0E0;
+            --dm-muted: #888;
+            --dm-table-row: #1A1A1A;
+            --dm-table-alt: #1E1E1E;
+            --dm-input-bg: #1A1A1A;
+        }
+
+        /* ── Structure ── */
+        body.dark-mode .card { background: var(--dm-card) !important; color: var(--dm-text) !important; }
+        body.dark-mode .topbar { background: #111 !important; border-bottom-color: #E60000 !important; }
+        body.dark-mode .border-bottom { border-color: #2A2A2A !important; }
+
+        /* ── Forms ── */
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #1A1A1A !important;
+            border-color: #333 !important;
+            color: #E0E0E0 !important;
+        }
+
+        /* ── Table — full dark overhaul ── */
+        body.dark-mode .table { color: #E0E0E0 !important; --bs-table-color: #E0E0E0; }
+        body.dark-mode .table thead th {
+            background: #222 !important;
+            color: #aaa !important;
+            border-color: #333 !important;
+        }
+        body.dark-mode .table tbody tr {
+            background-color: #1A1A1A !important;
+            --bs-table-bg: #1A1A1A !important;
+        }
+        body.dark-mode .table tbody tr:nth-child(even) {
+            background-color: #1E1E1E !important;
+            --bs-table-bg: #1E1E1E !important;
+        }
+        body.dark-mode .table tbody td {
+            border-color: #2A2A2A !important;
+            color: #E0E0E0 !important;
+            background-color: transparent !important;
+        }
+        body.dark-mode .table tbody tr:hover td { background-color: #252525 !important; }
+
+        /* ── Generic light-background overrides ── */
+        body.dark-mode [style*="background:#f8fafc"],
+        body.dark-mode [style*="background:#F7F7F7"],
+        body.dark-mode [style*="background:#f1f5f9"],
+        body.dark-mode [style*="background:#F2F2F2"],
+        body.dark-mode [style*="background:#F5F5F5"],
+        body.dark-mode [style*="background:#fafafa"],
+        body.dark-mode [style*="background:#ffffff"],
+        body.dark-mode [style*="background:#fff;"],
+        body.dark-mode [style*="background: #fff"],
+        body.dark-mode [style*="background:white"] { background: #1E1E1E !important; }
+
+        /* ── Dark text → light text (CSS layer) ── */
+        body.dark-mode h5,
+        body.dark-mode h6,
+        body.dark-mode .fw-bold,
+        body.dark-mode [style*="color:#0f172a"],
+        body.dark-mode [style*="color: #0f172a"],
+        body.dark-mode [style*="color:#1e293b"],
+        body.dark-mode [style*="color: #1e293b"],
+        body.dark-mode [style*="color:#1A1A1A"],
+        body.dark-mode [style*="color:#2A2A2A"],
+        body.dark-mode [style*="color:#334155"],
+        body.dark-mode [style*="color:#2d3748"],
+        body.dark-mode [style*="color:#374151"] { color: #E0E0E0 !important; }
+
+        /* ── Muted text ── */
+        body.dark-mode [style*="color:#475569"],
+        body.dark-mode [style*="color:#64748b"],
+        body.dark-mode [style*="color:#94a3b8"],
+        body.dark-mode [style*="color:#9ca3af"],
+        body.dark-mode [style*="color:#cbd5e1"] { color: #888 !important; }
+
+        /* ── dm-text helper classes (set by JS) ── */
+        body.dark-mode .dm-text-light { color: #E0E0E0 !important; }
+        body.dark-mode .dm-text-muted { color: #888 !important; }
+
+        /* ── Topbar title (CSS class color, not inline) ── */
+        body.dark-mode .topbar-title  { color: #E0E0E0 !important; }
+        body.dark-mode .topbar        { background: #111111 !important; border-bottom-color: #E60000 !important; }
+
+        /* ── Sidebar nav links (CSS class, not inline) ── */
+        body.dark-mode .nav-link-p:not(.active) { color: #AAAAAA !important; }
+        body.dark-mode .nav-link-p:not(.active):hover { color: #FFFFFF !important; background: rgba(255,255,255,0.08) !important; }
+        body.dark-mode .nav-link-p:not(.active) .nav-icon { background: rgba(255,255,255,0.05) !important; }
+        body.dark-mode .sidebar-section { color: #666666 !important; }
+
+        /* ── Quick Action cards dark mode ── */
+        body.dark-mode .dm-action-card {
+            background: linear-gradient(135deg, #2A2A2A, #222222) !important;
+            border-color: #3A3A3A !important;
+        }
+        body.dark-mode .dm-action-card .dm-action-label {
+            color: #E0E0E0 !important;
+        }
+        body.dark-mode .dm-action-card .dm-action-icon-gray {
+            color: #AAAAAA !important;
+        }
+
+        body.dark-mode p { color: #aaa; }
+
+        :root {
+            --vi-red:      #E60000;
+            --vi-red-dark: #CC0000;
+            --vi-red-glow: rgba(230,0,0,0.22);
+            --vi-yellow:   #FFCC00;
+            --vi-black:    #1A1A1A;
+        }
+        * { font-family: 'Poppins', sans-serif; box-sizing: border-box; }
+        body { background: #F2F2F2; margin: 0; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 262px; height: 100vh;
+            background: var(--vi-black);
+            display: flex; flex-direction: column;
+            z-index: 200;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px;
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: var(--vi-red);
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: #fff;
+            box-shadow: 0 4px 14px var(--vi-red-glow);
+        }
+        .brand-text { color: #fff; font-weight: 800; font-size: 1rem; line-height: 1.1; }
+        .brand-sub  { color: #555; font-size: 0.68rem; font-weight: 400; margin-top: 1px; }
+
+        /* Employee info card inside sidebar */
+        .emp-banner {
+            margin: 12px 12px 6px;
+            background: rgba(230,0,0,0.08);
+            border: 1px solid rgba(230,0,0,0.18);
+            border-radius: 12px; padding: 12px 14px;
+        }
+        .emp-avatar-sb {
+            width: 34px; height: 34px;
+            background: var(--vi-red);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .emp-banner .emp-name { color: #FF6666; font-weight: 700; font-size: 0.86rem; }
+        .emp-banner .emp-id   { color: #666; font-size: 0.72rem; }
+        .emp-banner .emp-pos  { color: #999; font-size: 0.76rem; margin-top: 2px; }
+
+        .sidebar-section {
+            padding: 16px 18px 5px;
+            font-size: 0.64rem; font-weight: 700;
+            color: #555; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        .nav-item-p { padding: 2px 10px; }
+        .nav-link-p {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; color: #888;
+            border-radius: 10px; text-decoration: none;
+            font-size: 0.86rem; font-weight: 500;
+            transition: all 0.18s ease;
+        }
+        .nav-link-p:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        .nav-link-p.active {
+            color: #fff;
+            background: var(--vi-red);
+            box-shadow: 0 4px 14px var(--vi-red-glow);
+        }
+        .nav-icon {
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; background: rgba(255,255,255,0.05); flex-shrink: 0;
+        }
+        .nav-link-p.active .nav-icon { background: rgba(255,255,255,0.18); }
+
+        .sidebar-footer {
+            margin-top: auto; padding: 14px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .logout-btn {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 14px; color: #888;
+            border-radius: 10px; text-decoration: none;
+            font-size: 0.86rem; font-weight: 500;
+            transition: all 0.18s;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .logout-btn:hover { background: rgba(230,0,0,0.12); color: #FF6666; border-color: rgba(230,0,0,0.2); }
+
+        /* ── Main ── */
+        .main-content { margin-left: 262px; min-height: 100vh; display: flex; flex-direction: column; }
+        .topbar {
+            height: 64px; background: #fff;
+            border-bottom: 2px solid var(--vi-red);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .topbar-title {
+            font-size: 1.05rem; font-weight: 700; color: var(--vi-black);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .topbar-title::before {
+            content: '';
+            width: 4px; height: 20px;
+            background: var(--vi-red);
+            border-radius: 2px;
+        }
+        .role-badge {
+            background: #FFF0F0; color: var(--vi-red);
+            border: 1px solid rgba(230,0,0,0.2);
+            padding: 4px 14px; border-radius: 20px;
+            font-size: 0.74rem; font-weight: 700;
+        }
+        .page-content { padding: 26px 28px; flex: 1; }
+
+        /* ── Cards ── */
+        .card {
+            border: none; border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+            background: #fff;
+        }
+        .stat-card {
+            border-radius: 14px; padding: 20px 22px;
+            color: #fff; position: relative; overflow: hidden; border: none;
+        }
+        .stat-card::after {
+            content: ''; position: absolute;
+            top: -20px; right: -20px;
+            width: 100px; height: 100px;
+            border-radius: 50%; background: rgba(255,255,255,0.08);
+        }
+        .stat-card .stat-label  { font-size: 0.76rem; font-weight: 600; opacity: 0.85; margin-bottom: 6px; }
+        .stat-card .stat-number { font-size: 2rem; font-weight: 800; line-height: 1; }
+        .stat-card .stat-icon   { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 2.5rem; opacity: 0.15; }
+
+        /* ── Tables ── */
+        .table thead th {
+            background: #F7F7F7; color: #555;
+            font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            border-bottom: 2px solid #EBEBEB; padding: 12px 16px;
+        }
+        .table tbody td { padding: 12px 16px; vertical-align: middle; border-color: #f5f5f5; font-size: 0.875rem; }
+        .table tbody tr:hover { background: #FAFAFA; }
+
+        /* ── Badges ── */
+        .badge-status { padding: 5px 13px; border-radius: 20px; font-size: 0.73rem; font-weight: 600; }
+        .badge-present  { background: #dcfce7; color: #166534; }
+        .badge-absent   { background: #fee2e2; color: #991b1b; }
+        .badge-half_day { background: #fef9c3; color: #854d0e; }
+        .badge-late     { background: #fff7ed; color: #c2410c; }
+        .badge-pending  { background: #fff7ed; color: #c2410c; }
+        .badge-approved { background: #dcfce7; color: #166534; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+        .badge-paid     { background: #dcfce7; color: #166534; }
+        .badge-draft    { background: #f5f5f5; color: #666; }
+
+        /* ── Forms ── */
+        .form-control, .form-select {
+            border-radius: 10px; border: 1.5px solid #e8e8e8;
+            font-size: 0.875rem; font-family: 'Poppins', sans-serif;
+            padding: 9px 14px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--vi-red);
+            box-shadow: 0 0 0 3px rgba(230,0,0,0.1);
+        }
+        .form-label { font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px; }
+
+        /* ── Vi button ── */
+        .btn-green, .btn-vi {
+            background: var(--vi-red); color: #fff;
+            border: none; border-radius: 10px; font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-green:hover, .btn-vi:hover {
+            background: var(--vi-red-dark); color: #fff;
+        }
+
+        /* ── Alerts ── */
+        .alert { border-radius: 12px; border: none; font-size: 0.875rem; }
+        .alert-success { background: #dcfce7; color: #166534; }
+        .alert-danger  { background: #fee2e2; color: #991b1b; }
+        .alert-warning { background: #fff7ed; color: #c2410c; }
+
+        /* ── Empty state ── */
+        .empty-state { text-align: center; padding: 50px 20px; }
+        .empty-state i { font-size: 3rem; color: #ddd; margin-bottom: 10px; display: block; }
+        .empty-state p { color: #aaa; margin-bottom: 14px; font-size: 0.88rem; }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--vi-red); }
+    </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="bi bi-person-fill"></i></div>
+        <div>
+            <div class="brand-text">HRM System</div>
+            <div class="brand-sub">Employee Self-Service</div>
+        </div>
+    </div>
+
+    {% if employee %}
+    <div class="emp-banner">
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <div class="emp-avatar-sb">{{ employee.name|slice:":1"|upper }}</div>
+            <div>
+                <div class="emp-name">{{ employee.name }}</div>
+                <div class="emp-id">ID: {{ employee.employee_id }}</div>
+            </div>
+        </div>
+        <div class="emp-pos">{{ employee.position|default:"Employee" }} · {{ employee.department|default:"—" }}</div>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-section">My Menu</div>
+
+    <div class="nav-item-p">
+        <a href="/portal/" class="nav-link-p {% block nav_home %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-grid-fill"></i></div> Dashboard
+        </a>
+    </div>
+    <div class="nav-item-p">
+        <a href="/punch/" class="nav-link-p {% block nav_punch %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-fingerprint"></i></div> Punch In / Out
+        </a>
+    </div>
+    <div class="nav-item-p">
+        <a href="/portal/profile/" class="nav-link-p {% block nav_profile %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-person-circle"></i></div> My Profile
+        </a>
+    </div>
+    <div class="nav-item-p">
+        <a href="/portal/attendance/" class="nav-link-p {% block nav_attendance %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-calendar-check"></i></div> My Attendance
+        </a>
+    </div>
+    <div class="nav-item-p">
+        <a href="/portal/leaves/" class="nav-link-p {% block nav_leaves %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-calendar-x"></i></div> My Leaves
+        </a>
+    </div>
+    <div class="nav-item-p">
+        <a href="/portal/payslips/" class="nav-link-p {% block nav_payslips %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-receipt"></i></div> My Payslips
+        </a>
+    </div>
+    <div class="nav-item-p">
+        <a href="/portal/reviews/" class="nav-link-p {% block nav_reviews %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-star"></i></div> My Reviews
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="/logout/" class="logout-btn">
+            <div class="nav-icon" style="background:rgba(230,0,0,0.1);"><i class="bi bi-box-arrow-right"></i></div>
+            Sign Out
+        </a>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Dark Mode -->
+            <button onclick="toggleDarkPortal()" id="darkBtnPortal" title="Toggle Dark Mode"
+                style="width:36px;height:36px;border-radius:9px;border:1.5px solid #e8e8e8;background:none;display:flex;align-items:center;justify-content:center;color:#888;font-size:1rem;cursor:pointer;transition:all 0.15s;">
+                <i class="bi bi-moon-fill" id="darkIconPortal"></i>
+            </button>
+            <span class="role-badge"><i class="bi bi-person-check me-1"></i>Employee</span>
+
+            <!-- User Dropdown -->
+            <div class="dropdown">
+                <div data-bs-toggle="dropdown" aria-expanded="false"
+                     style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:9px;border:1.5px solid #e8e8e8;cursor:pointer;transition:all 0.15s;"
+                     onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background='transparent'">
+                    <div style="width:28px;height:28px;background:linear-gradient(135deg,#E60000,#CC0000);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.74rem;flex-shrink:0;">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </div>
+                    <span style="font-size:0.83rem;font-weight:600;color:#1A1A1A;">{{ request.user.username }}</span>
+                    <i class="bi bi-chevron-down" style="font-size:0.65rem;color:#94a3b8;"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end" style="border:none;border-radius:14px;padding:8px;min-width:210px;margin-top:8px;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
+                    <li>
+                        <div style="padding:10px 12px 8px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;">
+                            <div style="font-weight:700;font-size:0.86rem;color:#0f172a;">{{ request.user.username }}</div>
+                            <div style="font-size:0.72rem;color:#94a3b8;">Employee Portal</div>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/portal/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-speedometer2" style="color:#E60000;font-size:0.8rem;"></i>
+                            </div>
+                            My Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/portal/profile/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#F5F5F5;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-person" style="color:#1A1A1A;font-size:0.8rem;"></i>
+                            </div>
+                            My Profile
+                        </a>
+                    </li>
+                    <li><hr style="margin:6px 0;border-color:#f1f5f9;"></li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/logout/" style="font-size:0.84rem;padding:9px 12px;color:#E60000;font-weight:600;">
+                            <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;">
+                                <i class="bi bi-box-arrow-right" style="color:#E60000;font-size:0.8rem;"></i>
+                            </div>
+                            Sign Out
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-content">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center gap-2 mb-3">
+            {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>
+            {% else %}<i class="bi bi-exclamation-circle-fill"></i>{% endif %}
+            {{ message }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/*
+ * Dark Mode — robust inline-style patcher (portal)
+ * Same engine as base.html — scans all [style] elements and directly
+ * rewrites dark inline colors so they're visible on dark backgrounds.
+ */
+
+const DM_DARK_COLORS = [
+    '#0f172a','#0F172A',
+    '#1e293b','#1E293B',
+    '#1a1a1a','#1A1A1A',
+    '#2a2a2a','#2A2A2A',
+    '#334155','#374151','#2d3748',
+    '#111111','#111',
+    '#212529',
+];
+const DM_MUTED_COLORS = [
+    '#475569','#64748b','#94a3b8',
+    '#9ca3af','#6b7280','#cbd5e1',
+    '#a0aec0',
+];
+const DM_PRESERVE = [
+    '#e60000','#E60000','#cc0000','#CC0000',
+    '#16a34a','#166534','#10b981','#15803d',
+    '#ef4444','#dc2626',
+    '#f97316','#c2410c','#ea580c',
+    '#f59e0b','#d97706','#92400e',
+    '#854d0e',
+    '#ffcc00','#FFCC00',
+    '#8b5cf6','#7c3aed','#6d28d9',
+    '#3b82f6','#1d4ed8',
+    '#991b1b',
+    '#fff','#ffffff',
+];
+
+function _isDarkColor(c) {
+    return DM_DARK_COLORS.some(d => c.toLowerCase().replace(/\s/g,'') === d.toLowerCase());
+}
+function _isMutedColor(c) {
+    return DM_MUTED_COLORS.some(d => c.toLowerCase().replace(/\s/g,'') === d.toLowerCase());
+}
+function _isPreservedColor(c) {
+    return DM_PRESERVE.some(d => c.toLowerCase().replace(/\s/g,'') === d.toLowerCase());
+}
+
+function patchInlineColors(isDark) {
+    document.querySelectorAll('[style]').forEach(function(el) {
+        const raw = el.getAttribute('style') || '';
+        const colorMatch = raw.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+        if (!colorMatch) return;
+        const colorVal = colorMatch[1].trim();
+
+        if (isDark) {
+            if (_isPreservedColor(colorVal)) return;
+            if (_isDarkColor(colorVal)) {
+                el.dataset.dmOrig = colorVal;
+                el.style.setProperty('color', '#E0E0E0', 'important');
+            } else if (_isMutedColor(colorVal)) {
+                el.dataset.dmOrig = colorVal;
+                el.style.setProperty('color', '#888888', 'important');
+            }
+        } else {
+            if (el.dataset.dmOrig) {
+                el.style.color = el.dataset.dmOrig;
+                delete el.dataset.dmOrig;
+            }
+        }
+    });
+}
+
+function patchTableRows(isDark) {
+    document.querySelectorAll('.table tbody tr').forEach(function(tr, i) {
+        if (isDark) {
+            tr.dataset.dmOrigBg = tr.style.backgroundColor || '';
+            tr.style.setProperty('background-color', i % 2 === 0 ? '#1A1A1A' : '#1E1E1E', 'important');
+        } else {
+            tr.style.backgroundColor = tr.dataset.dmOrigBg || '';
+            delete tr.dataset.dmOrigBg;
+        }
+    });
+}
+
+function applyDarkMode(isDark) {
+    patchInlineColors(isDark);
+    patchTableRows(isDark);
+}
+
+function toggleDarkPortal() {
+    document.body.classList.toggle('dark-mode');
+    const icon   = document.getElementById('darkIconPortal');
+    const isDark = document.body.classList.contains('dark-mode');
+    icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    localStorage.setItem('darkMode', isDark ? '1' : '0');
+    applyDarkMode(isDark);
+}
+
+(function() {
+    if (localStorage.getItem('darkMode') === '1') {
+        document.body.classList.add('dark-mode');
+        const icon = document.getElementById('darkIconPortal');
+        if (icon) icon.className = 'bi bi-sun-fill';
+        window.addEventListener('DOMContentLoaded', function() {
+            applyDarkMode(true);
+        });
+    }
+})();
+</script>
+</body>
+</html>

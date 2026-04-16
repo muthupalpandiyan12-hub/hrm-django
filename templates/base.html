@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM System — {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════ DARK MODE ═══════════ */
+        body.dark-mode {
+            background: #0D0D0D !important;
+            --dm-card: #1A1A1A;
+            --dm-border: #2A2A2A;
+            --dm-text: #E0E0E0;
+            --dm-muted: #888;
+            --dm-table-header: #222;
+            --dm-table-row: #1A1A1A;
+            --dm-table-alt: #1E1E1E;
+            --dm-input-bg: #1A1A1A;
+        }
+
+        /* ── Structure ── */
+        body.dark-mode .card {
+            background: var(--dm-card) !important;
+            color: var(--dm-text) !important;
+        }
+        body.dark-mode .topbar { background: #111 !important; border-bottom-color: #E60000 !important; }
+        body.dark-mode .topbar-title { color: #E0E0E0 !important; }
+        body.dark-mode .topbar-user { border-color: #333 !important; }
+        body.dark-mode .topbar-username { color: #E0E0E0 !important; }
+        body.dark-mode .topbar-badge { border-color: #333 !important; color: #888 !important; }
+        body.dark-mode .border-bottom { border-color: #2A2A2A !important; }
+
+        /* ── Forms ── */
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background: #1A1A1A !important;
+            border-color: #333 !important;
+            color: #E0E0E0 !important;
+        }
+
+        /* ── Table — full dark overhaul ── */
+        body.dark-mode .table { color: #E0E0E0 !important; --bs-table-color: #E0E0E0; }
+        body.dark-mode .table thead th {
+            background: #222 !important;
+            color: #aaa !important;
+            border-color: #333 !important;
+        }
+        body.dark-mode .table tbody tr {
+            background-color: #1A1A1A !important;
+            --bs-table-bg: #1A1A1A !important;
+        }
+        body.dark-mode .table tbody tr:nth-child(even) {
+            background-color: #1E1E1E !important;
+            --bs-table-bg: #1E1E1E !important;
+        }
+        body.dark-mode .table tbody td {
+            border-color: #2A2A2A !important;
+            color: #E0E0E0 !important;
+            background-color: transparent !important;
+        }
+        body.dark-mode .table tbody tr:hover td { background-color: #252525 !important; }
+
+        /* ── Generic light-background overrides ── */
+        body.dark-mode [style*="background:#f8fafc"],
+        body.dark-mode [style*="background:#F7F7F7"],
+        body.dark-mode [style*="background:#f1f5f9"],
+        body.dark-mode [style*="background:#F2F2F2"],
+        body.dark-mode [style*="background:#F5F5F5"],
+        body.dark-mode [style*="background:#fafafa"],
+        body.dark-mode [style*="background:#ffffff"],
+        body.dark-mode [style*="background:#fff;"],
+        body.dark-mode [style*="background: #fff"],
+        body.dark-mode [style*="background:white"] { background: #1E1E1E !important; }
+
+        /* ── Dark text → light text (CSS attribute selectors as first layer) ── */
+        body.dark-mode h5,
+        body.dark-mode h6,
+        body.dark-mode .fw-bold,
+        body.dark-mode [style*="color:#0f172a"],
+        body.dark-mode [style*="color: #0f172a"],
+        body.dark-mode [style*="color:#1e293b"],
+        body.dark-mode [style*="color: #1e293b"],
+        body.dark-mode [style*="color:#1A1A1A"],
+        body.dark-mode [style*="color:#2A2A2A"],
+        body.dark-mode [style*="color:#334155"],
+        body.dark-mode [style*="color:#2d3748"],
+        body.dark-mode [style*="color:#374151"] { color: #E0E0E0 !important; }
+
+        /* ── Muted text ── */
+        body.dark-mode [style*="color:#475569"],
+        body.dark-mode [style*="color:#64748b"],
+        body.dark-mode [style*="color:#94a3b8"],
+        body.dark-mode [style*="color:#9ca3af"],
+        body.dark-mode [style*="color:#cbd5e1"] { color: #888 !important; }
+
+        /* ── dm-text helper class (set by JS on toggle) ── */
+        body.dark-mode .dm-text-light { color: #E0E0E0 !important; }
+        body.dark-mode .dm-text-muted { color: #888 !important; }
+
+        body.dark-mode p { color: #aaa; }
+
+        :root {
+            --vi-red:        #E60000;
+            --vi-red-dark:   #CC0000;
+            --vi-red-glow:   rgba(230,0,0,0.25);
+            --vi-yellow:     #FFCC00;
+            --vi-black:      #1A1A1A;
+            --vi-dark:       #2A2A2A;
+            --sidebar-width: 262px;
+            --topbar-height: 64px;
+        }
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #F2F2F2; margin: 0; }
+
+        /* ═══════════ SIDEBAR ═══════════ */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--vi-black);
+            display: flex; flex-direction: column;
+            z-index: 200;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+            overflow-y: auto;
+        }
+
+        /* Brand */
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px;
+            padding: 20px 18px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: var(--vi-red);
+            border-radius: 11px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; color: #fff;
+            box-shadow: 0 4px 14px var(--vi-red-glow);
+            flex-shrink: 0;
+        }
+        .brand-text  { color: #fff; font-weight: 800; font-size: 1.05rem; line-height: 1.1; }
+        .brand-sub   { color: #666; font-size: 0.68rem; font-weight: 400; margin-top: 1px; }
+
+        /* Section labels */
+        .sidebar-section {
+            padding: 18px 18px 5px;
+            font-size: 0.64rem; font-weight: 700;
+            color: #555; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+
+        /* Nav items */
+        .nav-item-custom { padding: 2px 10px; }
+        .nav-link-custom {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px;
+            color: #888;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 0.86rem; font-weight: 500;
+            transition: all 0.18s ease;
+        }
+        .nav-link-custom:hover { color: #fff; background: rgba(255,255,255,0.06); }
+        .nav-link-custom.active {
+            color: #fff;
+            background: var(--vi-red);
+            box-shadow: 0 4px 14px var(--vi-red-glow);
+        }
+        .nav-link-custom .nav-icon {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .nav-link-custom.active .nav-icon { background: rgba(255,255,255,0.18); }
+
+        /* Yellow accent badge on nav */
+        .nav-badge {
+            margin-left: auto;
+            background: var(--vi-yellow);
+            color: var(--vi-black);
+            font-size: 0.65rem; font-weight: 800;
+            padding: 2px 7px; border-radius: 20px;
+        }
+
+        /* Footer */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 14px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .sidebar-footer .user-card {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+        }
+        .user-avatar {
+            width: 34px; height: 34px;
+            background: var(--vi-red);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-weight: 700; font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+        .user-name { color: #e0e0e0; font-size: 0.82rem; font-weight: 600; }
+        .user-role { color: #555; font-size: 0.7rem; }
+
+        /* ═══════════ MAIN CONTENT ═══════════ */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+
+        /* Topbar */
+        .topbar {
+            height: var(--topbar-height);
+            background: #fff;
+            border-bottom: 2px solid var(--vi-red);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px;
+            position: sticky; top: 0; z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .topbar-title {
+            font-size: 1.1rem; font-weight: 700; color: var(--vi-black);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .topbar-title::before {
+            content: '';
+            width: 4px; height: 20px;
+            background: var(--vi-red);
+            border-radius: 2px;
+        }
+        .topbar-right { display: flex; align-items: center; gap: 10px; }
+        .topbar-badge {
+            width: 36px; height: 36px;
+            border-radius: 9px;
+            border: 1.5px solid #e8e8e8;
+            display: flex; align-items: center; justify-content: center;
+            color: #888; font-size: 1rem; cursor: pointer;
+            transition: all 0.15s;
+        }
+        .topbar-badge:hover { background: #f5f5f5; color: var(--vi-red); border-color: #ddd; }
+        .topbar-user {
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 12px;
+            border-radius: 9px;
+            border: 1.5px solid #e8e8e8;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .topbar-user:hover { background: #fafafa; border-color: #ddd; }
+        .topbar-username { font-size: 0.83rem; font-weight: 600; color: var(--vi-black); }
+
+        /* Page Content */
+        .page-content { padding: 26px 28px; flex: 1; }
+
+        /* ═══════════ CARDS ═══════════ */
+        .card {
+            border: none;
+            border-radius: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s;
+            background: #fff;
+        }
+        .card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.09); }
+
+        /* Stat Cards */
+        .stat-card {
+            border-radius: 14px;
+            padding: 22px 22px;
+            color: #fff;
+            position: relative; overflow: hidden; border: none;
+        }
+        .stat-card::after {
+            content: '';
+            position: absolute; top: -24px; right: -24px;
+            width: 110px; height: 110px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+        }
+        .stat-card .stat-label { font-size: 0.78rem; font-weight: 600; opacity: 0.85; margin-bottom: 6px; }
+        .stat-card .stat-number { font-size: 2.2rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+        .stat-card .stat-sub { font-size: 0.74rem; opacity: 0.7; }
+        .stat-card .stat-icon-wrap {
+            position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+            font-size: 2.8rem; opacity: 0.15;
+        }
+
+        /* ═══════════ TABLES ═══════════ */
+        .table thead th {
+            background: #F7F7F7;
+            color: #555;
+            font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            border-bottom: 2px solid #EBEBEB;
+            padding: 12px 16px;
+        }
+        .table tbody td { padding: 13px 16px; vertical-align: middle; border-color: #f5f5f5; font-size: 0.86rem; }
+        .table tbody tr:hover { background: #FAFAFA; }
+
+        /* ═══════════ BADGES ═══════════ */
+        .badge-status { padding: 5px 13px; border-radius: 20px; font-size: 0.73rem; font-weight: 600; }
+        .badge-active     { background: #dcfce7; color: #166534; }
+        .badge-inactive   { background: #fef9c3; color: #854d0e; }
+        .badge-terminated { background: #fee2e2; color: #991b1b; }
+        .badge-present    { background: #dcfce7; color: #166534; }
+        .badge-absent     { background: #fee2e2; color: #991b1b; }
+        .badge-half_day   { background: #fef9c3; color: #854d0e; }
+        .badge-late       { background: #fff7ed; color: #c2410c; }
+        .badge-pending    { background: #fff7ed; color: #c2410c; }
+        .badge-approved   { background: #dcfce7; color: #166534; }
+        .badge-rejected   { background: #fee2e2; color: #991b1b; }
+        .badge-paid       { background: #dcfce7; color: #166534; }
+        .badge-draft      { background: #f5f5f5; color: #666; }
+
+        /* ═══════════ BUTTONS ═══════════ */
+        .btn-primary {
+            background: var(--vi-red) !important;
+            border-color: var(--vi-red) !important;
+            font-weight: 600; letter-spacing: 0.01em;
+        }
+        .btn-primary:hover { background: var(--vi-red-dark) !important; border-color: var(--vi-red-dark) !important; }
+        .btn-icon {
+            width: 32px; height: 32px; padding: 0; border-radius: 8px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════ FORMS ═══════════ */
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 1.5px solid #e8e8e8;
+            font-size: 0.875rem; font-family: 'Poppins', sans-serif;
+            padding: 9px 14px;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--vi-red);
+            box-shadow: 0 0 0 3px rgba(230,0,0,0.1);
+        }
+        .form-label { font-size: 0.8rem; font-weight: 600; color: #333; margin-bottom: 5px; }
+
+        /* ═══════════ ALERTS ═══════════ */
+        .alert { border-radius: 12px; border: none; font-size: 0.875rem; }
+        .alert-success { background: #dcfce7; color: #166534; }
+        .alert-danger  { background: #fee2e2; color: #991b1b; }
+        .alert-warning { background: #fff7ed; color: #c2410c; }
+        .alert-info    { background: #eff6ff; color: #1e40af; }
+
+        /* ═══════════ EMPTY STATE ═══════════ */
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state i { font-size: 3rem; color: #ddd; margin-bottom: 12px; display: block; }
+        .empty-state p { color: #aaa; font-size: 0.9rem; margin-bottom: 16px; }
+
+        /* ═══════════ AVATAR ═══════════ */
+        .emp-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--vi-red), #FF4444);
+            color: #fff; font-weight: 700; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        /* ═══════════ SEARCH ═══════════ */
+        .search-bar { position: relative; }
+        .search-bar input { padding-left: 38px; border-radius: 10px; }
+        .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        /* ═══════════ SCROLLBAR ═══════════ */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--vi-red); }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon"><i class="bi bi-people-fill"></i></div>
+        <div>
+            <div class="brand-text">HRM System</div>
+            <div class="brand-sub">HR Management System</div>
+        </div>
+    </div>
+
+    <div class="sidebar-section">Main Menu</div>
+
+    <div class="nav-item-custom">
+        <a href="/" class="nav-link-custom {% block nav_dashboard %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-speedometer2"></i></div>
+            Dashboard
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/employees/" class="nav-link-custom {% block nav_employees %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-person-lines-fill"></i></div>
+            Employees
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/attendance/" class="nav-link-custom {% block nav_attendance %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-calendar-check"></i></div>
+            Attendance
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/leave/" class="nav-link-custom {% block nav_leave %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-calendar-x"></i></div>
+            Leave Management
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/payroll/" class="nav-link-custom {% block nav_payroll %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-cash-stack"></i></div>
+            Payroll
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/leave/balance/" class="nav-link-custom {% block nav_balance %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-bar-chart-line"></i></div>
+            Leave Balance
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/punch/admin/" class="nav-link-custom {% block nav_punch %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-fingerprint"></i></div>
+            Punch Records
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/core/holidays/" class="nav-link-custom {% block nav_holidays %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-calendar-heart"></i></div>
+            Holidays
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/core/announcements/" class="nav-link-custom {% block nav_announcements %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-megaphone"></i></div>
+            Announcements
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/performance/" class="nav-link-custom {% block nav_performance %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-star"></i></div>
+            Performance
+        </a>
+    </div>
+
+    <div class="sidebar-section">System</div>
+    <div class="nav-item-custom">
+        <a href="/users/" class="nav-link-custom {% block nav_users %}{% endblock %}">
+            <div class="nav-icon"><i class="bi bi-people"></i></div>
+            User Management
+        </a>
+    </div>
+    <div class="nav-item-custom">
+        <a href="/admin/" class="nav-link-custom">
+            <div class="nav-icon"><i class="bi bi-shield-lock"></i></div>
+            Admin Panel
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar">{{ request.user.username|slice:":1"|upper }}</div>
+            <div style="min-width:0;">
+                <div class="user-name text-truncate">{{ request.user.username }}</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <a href="/logout/" class="ms-auto" title="Logout"
+               style="color:#555;text-decoration:none;font-size:1rem;flex-shrink:0;transition:color 0.15s;"
+               onmouseover="this.style.color='#E60000'" onmouseout="this.style.color='#555'">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<div class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        <div class="topbar-right">
+            <!-- Dark Mode Toggle -->
+            <button onclick="toggleDark()" id="darkBtn" class="topbar-badge" title="Toggle Dark Mode" style="background:none;cursor:pointer;">
+                <i class="bi bi-moon-fill" id="darkIcon"></i>
+            </button>
+
+            <!-- Notifications (placeholder) -->
+            <div class="topbar-badge" title="Notifications"><i class="bi bi-bell"></i></div>
+
+            <!-- Settings Dropdown -->
+            <div class="dropdown">
+                <div class="topbar-badge" data-bs-toggle="dropdown" aria-expanded="false" title="Settings" style="cursor:pointer;">
+                    <i class="bi bi-gear"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border:none;border-radius:14px;padding:8px;min-width:200px;margin-top:8px;box-shadow:0 8px 30px rgba(0,0,0,0.12)!important;">
+                    <li><div style="font-size:0.68rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.08em;padding:4px 12px 6px;">System</div></li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/admin/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-shield-lock" style="color:#E60000;font-size:0.8rem;"></i>
+                            </div>
+                            Django Admin Panel
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/users/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#F5F5F5;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-people" style="color:#1A1A1A;font-size:0.8rem;"></i>
+                            </div>
+                            User Management
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/core/announcements/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#FFF9E6;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-megaphone" style="color:#CC9900;font-size:0.8rem;"></i>
+                            </div>
+                            Announcements
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- User / Admin Dropdown -->
+            <div class="dropdown">
+                <div class="topbar-user" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer;">
+                    <div class="user-avatar" style="width:28px;height:28px;font-size:0.74rem;">{{ request.user.username|slice:":1"|upper }}</div>
+                    <span class="topbar-username">{{ request.user.username }}</span>
+                    <i class="bi bi-chevron-down text-muted" style="font-size:0.65rem;"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border:none;border-radius:14px;padding:8px;min-width:220px;margin-top:8px;box-shadow:0 8px 30px rgba(0,0,0,0.12)!important;">
+                    <!-- User info header -->
+                    <li>
+                        <div style="padding:10px 12px 8px;border-bottom:1px solid #f1f5f9;margin-bottom:4px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:38px;height:38px;background:linear-gradient(135deg,#E60000,#CC0000);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.9rem;flex-shrink:0;">
+                                    {{ request.user.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div style="font-weight:700;font-size:0.86rem;color:#0f172a;">{{ request.user.username }}</div>
+                                    <div style="font-size:0.72rem;color:#94a3b8;">Administrator</div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-speedometer2" style="color:#E60000;font-size:0.8rem;"></i>
+                            </div>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/admin/password_change/" style="font-size:0.84rem;padding:9px 12px;color:#1A1A1A;">
+                            <div style="width:28px;height:28px;background:#F5F5F5;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-key" style="color:#1A1A1A;font-size:0.8rem;"></i>
+                            </div>
+                            Change Password
+                        </a>
+                    </li>
+                    <li><hr style="margin:6px 0;border-color:#f1f5f9;"></li>
+                    <li>
+                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/logout/" style="font-size:0.84rem;padding:9px 12px;color:#E60000;font-weight:600;">
+                            <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                <i class="bi bi-box-arrow-right" style="color:#E60000;font-size:0.8rem;"></i>
+                            </div>
+                            Sign Out
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+            {% if message.tags == 'success' %}<i class="bi bi-check-circle-fill"></i>
+            {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="bi bi-x-circle-fill"></i>
+            {% else %}<i class="bi bi-info-circle-fill"></i>{% endif %}
+            {{ message }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+<script>
+/*
+ * Dark Mode — robust inline-style patcher
+ *
+ * Problem: CSS attribute selectors like [style*="color:#0f172a"] are fragile
+ * when Bootstrap or other rules raise specificity. We solve it by directly
+ * rewriting inline color properties on every element that has a dark color
+ * when dark mode turns ON, and restoring originals when it turns OFF.
+ */
+
+// Colors we treat as "dark text" that must become light in dark mode
+const DM_DARK_COLORS = [
+    '#0f172a','#0F172A',
+    '#1e293b','#1E293B',
+    '#1a1a1a','#1A1A1A',
+    '#2a2a2a','#2A2A2A',
+    '#334155','#374151','#2d3748',
+    '#111111','#111',
+    '#212529',               // Bootstrap default body color
+];
+
+// Colors we treat as "muted" (turn to mid-gray in dark mode)
+const DM_MUTED_COLORS = [
+    '#475569','#64748b','#94a3b8',
+    '#9ca3af','#6b7280','#cbd5e1',
+    '#a0aec0',
+];
+
+// Colors to LEAVE ALONE (status / accent colours)
+const DM_PRESERVE = [
+    '#e60000','#E60000','#cc0000','#CC0000',
+    '#16a34a','#166534','#10b981','#15803d',
+    '#ef4444','#dc2626',
+    '#f97316','#c2410c','#ea580c',
+    '#f59e0b','#d97706','#92400e',
+    '#ffcc00','#FFCC00',
+    '#8b5cf6','#7c3aed','#6d28d9',
+    '#3b82f6','#1d4ed8',
+    '#fff','#ffffff','#white',
+];
+
+function _isDarkColor(c) {
+    const lc = c.toLowerCase().replace(/\s/g,'');
+    return DM_DARK_COLORS.some(d => lc === d.toLowerCase());
+}
+function _isMutedColor(c) {
+    const lc = c.toLowerCase().replace(/\s/g,'');
+    return DM_MUTED_COLORS.some(d => lc === d.toLowerCase());
+}
+function _isPreservedColor(c) {
+    const lc = c.toLowerCase().replace(/\s/g,'');
+    return DM_PRESERVE.some(d => lc === d.toLowerCase());
+}
+
+function patchInlineColors(isDark) {
+    // Target every element that has a style attribute
+    document.querySelectorAll('[style]').forEach(function(el) {
+        const raw = el.getAttribute('style') || '';
+
+        // Extract color value from inline style
+        const colorMatch = raw.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+        if (!colorMatch) return;
+
+        const colorVal = colorMatch[1].trim();
+
+        if (isDark) {
+            // Skip elements that are explicitly coloured (status badges, etc.)
+            if (_isPreservedColor(colorVal)) return;
+
+            if (_isDarkColor(colorVal)) {
+                el.dataset.dmOrig = colorVal;
+                el.style.setProperty('color', '#E0E0E0', 'important');
+            } else if (_isMutedColor(colorVal)) {
+                el.dataset.dmOrig = colorVal;
+                el.style.setProperty('color', '#888888', 'important');
+            }
+        } else {
+            // Restore original color
+            if (el.dataset.dmOrig) {
+                el.style.color = el.dataset.dmOrig;
+                delete el.dataset.dmOrig;
+            }
+        }
+    });
+}
+
+function patchTableRows(isDark) {
+    // Force table rows to have explicit dark background so Bootstrap
+    // striped / default white doesn't bleed through
+    document.querySelectorAll('.table tbody tr').forEach(function(tr, i) {
+        if (isDark) {
+            tr.dataset.dmOrigBg = tr.style.backgroundColor || '';
+            tr.style.setProperty('background-color', i % 2 === 0 ? '#1A1A1A' : '#1E1E1E', 'important');
+        } else {
+            tr.style.backgroundColor = tr.dataset.dmOrigBg || '';
+            delete tr.dataset.dmOrigBg;
+        }
+    });
+}
+
+function applyDarkMode(isDark) {
+    patchInlineColors(isDark);
+    patchTableRows(isDark);
+}
+
+function toggleDark() {
+    document.body.classList.toggle('dark-mode');
+    const icon   = document.getElementById('darkIcon');
+    const isDark = document.body.classList.contains('dark-mode');
+    icon.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    localStorage.setItem('darkMode', isDark ? '1' : '0');
+    applyDarkMode(isDark);
+}
+
+// On page load: restore dark mode if previously enabled
+(function() {
+    if (localStorage.getItem('darkMode') === '1') {
+        document.body.classList.add('dark-mode');
+        const icon = document.getElementById('darkIcon');
+        if (icon) icon.className = 'bi bi-sun-fill';
+        // Run after DOM is fully rendered
+        window.addEventListener('DOMContentLoaded', function() {
+            applyDarkMode(true);
+        });
+    }
+})();
+</script>
+</body>
+</html>

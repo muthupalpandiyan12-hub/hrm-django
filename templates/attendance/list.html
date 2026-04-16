@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Attendance{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Attendance{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="p-4 d-flex flex-wrap align-items-center justify-content-between gap-3 border-bottom">
+        <div>
+            <h5 style="font-weight:700;color:#0f172a;margin:0;">Attendance Records</h5>
+            <p style="font-size:0.8rem;color:#94a3b8;margin:0;">{{ attendances|length }} records for {{ date_filter }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form method="get" class="d-flex gap-2 align-items-center">
+                <div style="position:relative;">
+                    <i class="bi bi-calendar3" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.9rem;"></i>
+                    <input type="date" name="date" value="{{ date_filter }}" class="form-control form-control-sm" style="padding-left:32px;border-radius:10px;border:1.5px solid #e2e8f0;">
+                </div>
+                <button type="submit" class="btn btn-sm" style="background:#FFF0F0;color:#E60000;border-radius:10px;font-weight:600;border:1px solid #FFCCCC;padding:6px 14px;">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </form>
+            <a href="/attendance/export/?date={{ date_filter }}" class="btn btn-sm" style="background:#E60000;color:#fff;border-radius:10px;font-weight:600;padding:7px 16px;">
+                <i class="bi bi-file-earmark-excel me-1"></i> Export Excel
+            </a>
+            <a href="/attendance/mark/" class="btn btn-sm" style="background:#E60000;color:#fff;border-radius:10px;font-weight:600;padding:7px 16px;">
+                <i class="bi bi-plus-lg me-1"></i> Mark Attendance
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Status</th>
+                    <th>Note</th>
+                    <th style="text-align:center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for a in attendances %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="emp-avatar" style="background:linear-gradient(135deg,#2A2A2A,#1A1A1A);">{{ a.employee.name|slice:":1"|upper }}</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;">{{ a.employee.name }}</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;">{{ a.employee.employee_id }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td style="font-size:0.85rem;color:#475569;">{{ a.date }}</td>
+                <td>
+                    {% if a.check_in %}
+                    <span style="font-size:0.85rem;font-weight:600;color:#166534;background:#dcfce7;padding:3px 10px;border-radius:8px;">{{ a.check_in }}</span>
+                    {% else %}<span style="color:#94a3b8;font-size:0.85rem;">—</span>{% endif %}
+                </td>
+                <td>
+                    {% if a.check_out %}
+                    <span style="font-size:0.85rem;font-weight:600;color:#1A1A1A;background:#F5F5F5;padding:3px 10px;border-radius:8px;">{{ a.check_out }}</span>
+                    {% else %}<span style="color:#94a3b8;font-size:0.85rem;">—</span>{% endif %}
+                </td>
+                <td><span class="badge-status badge-{{ a.status }}">{{ a.get_status_display }}</span></td>
+                <td style="font-size:0.83rem;color:#64748b;">{{ a.note|default:"—"|truncatechars:25 }}</td>
+                <td style="text-align:center;">
+                    <a href="/attendance/{{ a.pk }}/delete/" class="btn btn-icon" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" title="Delete"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-check"></i>
+                        <p>No attendance records for {{ date_filter }}</p>
+                        <a href="/attendance/mark/" class="btn btn-sm" style="background:#E60000;color:#fff;border-radius:10px;font-weight:600;">Mark Attendance</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

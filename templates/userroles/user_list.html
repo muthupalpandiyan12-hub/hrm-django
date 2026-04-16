@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}User Management{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="p-4 d-flex align-items-center justify-content-between border-bottom">
+        <div>
+            <h5 style="font-weight:700;color:#0f172a;margin:0;">User Accounts</h5>
+            <p style="font-size:0.8rem;color:#94a3b8;margin:0;">{{ users|length }} accounts created</p>
+        </div>
+        <a href="/users/create/" class="btn btn-primary px-4" style="border-radius:10px;font-weight:600;font-size:0.85rem;">
+            <i class="bi bi-person-plus me-1"></i> Create User Account
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr><th>Username</th><th>Role</th><th>Linked Employee</th><th>Department</th><th>Created</th><th style="text-align:center;">Action</th></tr>
+            </thead>
+            <tbody>
+            {% for up in users %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:34px;height:34px;background:linear-gradient(135deg,#E60000,#CC0000);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.85rem;">
+                            {{ up.user.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.875rem;">{{ up.user.username }}</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;">{{ up.user.email|default:"No email" }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    {% if up.role == 'admin' %}
+                    <span style="background:#FFF0F0;color:#E60000;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;border:1px solid #FFCCCC;">
+                        <i class="bi bi-shield-fill me-1"></i>Admin
+                    </span>
+                    {% else %}
+                    <span style="background:#f0fdf4;color:#166534;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:600;border:1px solid #bbf7d0;">
+                        <i class="bi bi-person-fill me-1"></i>Employee
+                    </span>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.85rem;font-weight:600;">{{ up.employee.name|default:"—" }}</td>
+                <td style="font-size:0.85rem;">
+                    {% if up.department %}{{ up.department.name }}
+                    {% elif up.employee.department %}{{ up.employee.department }}
+                    {% else %}—{% endif %}
+                </td>
+                <td style="font-size:0.83rem;color:#64748b;">{{ up.user.date_joined|date:"d M Y" }}</td>
+                <td style="text-align:center;">
+                    <a href="/users/{{ up.pk }}/delete/" class="btn btn-icon" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" title="Delete"><i class="bi bi-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">
+                <div style="text-align:center;padding:50px 20px;">
+                    <i class="bi bi-people" style="font-size:3rem;color:#cbd5e1;display:block;margin-bottom:10px;"></i>
+                    <p style="color:#94a3b8;">No user accounts yet. Create one for your employees.</p>
+                    <a href="/users/create/" class="btn btn-primary btn-sm" style="border-radius:10px;font-weight:600;">Create First User</a>
+                </div>
+            </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

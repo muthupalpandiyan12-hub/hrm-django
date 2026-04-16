@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% block title %}Punch Records{% endblock %}
+{% block nav_punch %}active{% endblock %}
+{% block page_title %}Punch Records{% endblock %}
+
+{% block content %}
+
+<!-- Unclosed Sessions Warning -->
+{% if unclosed_count %}
+<div class="d-flex align-items-center gap-3 p-3 mb-4 rounded-3" style="background:#fff3cd;border:1px solid #ffc107;">
+    <i class="bi bi-exclamation-triangle-fill" style="color:#856404;font-size:1.4rem;flex-shrink:0;"></i>
+    <div style="flex:1;">
+        <div style="font-weight:700;color:#856404;font-size:0.9rem;">{{ unclosed_count }} session{{ unclosed_count|pluralize }} never closed</div>
+        <div style="font-size:0.8rem;color:#a16207;">Some employees punched in but never punched out — their worked time keeps growing.</div>
+    </div>
+    <a href="/punch/admin/unclosed/" class="btn btn-sm" style="background:#E60000;color:#fff;border-radius:10px;font-weight:600;font-size:0.83rem;flex-shrink:0;">
+        <i class="bi bi-tools me-1"></i>Fix Now
+    </a>
+</div>
+{% endif %}
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#E60000,#CC0000);">
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-number">{{ all_summaries|length }}</div>
+            <div class="stat-icon-wrap"><i class="bi bi-people-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#2A2A2A,#1A1A1A);">
+            <div class="stat-label">Currently Active</div>
+            <div class="stat-number">{{ active_count }}</div>
+            <div class="stat-icon-wrap"><i class="bi bi-circle-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#555,#3A3A3A);">
+            <div class="stat-label">Present Today</div>
+            <div class="stat-number">{{ present_count }}</div>
+            <div class="stat-icon-wrap"><i class="bi bi-person-check-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card" style="background:linear-gradient(135deg,#FFCC00,#E6B800);color:#1A1A1A;">
+            <div class="stat-label">Completed 8h</div>
+            <div class="stat-number">{{ complete_count }}</div>
+            <div class="stat-icon-wrap"><i class="bi bi-trophy-fill"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Card -->
+<div class="card">
+    <!-- Header -->
+    <div class="p-4 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h5 style="font-weight:700;color:#0f172a;margin:0;">Daily Punch Records</h5>
+            <p style="font-size:0.8rem;color:#94a3b8;margin:0;">
+                {{ selected_date|date:"l, d F Y" }} — {{ present_count }} present, {{ absent_count }} absent
+            </p>
+        </div>
+        <form method="get" class="d-flex gap-2 align-items-center">
+            <div style="position:relative;">
+                <i class="bi bi-calendar3" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.9rem;"></i>
+                <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                       class="form-control form-control-sm" style="padding-left:32px;border-radius:10px;">
+            </div>
+            <button type="submit" class="btn btn-sm" style="background:#FFF0F0;color:#E60000;border-radius:10px;font-weight:600;border:1px solid #FFCCCC;padding:6px 14px;">
+                <i class="bi bi-funnel me-1"></i>Filter
+            </button>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Status</th>
+                    <th>First In</th>
+                    <th>Last Out</th>
+                    <th style="min-width:160px;">Progress (8h)</th>
+                    <th>Worked</th>
+                    <th>Breaks</th>
+                    <th>Sessions</th>
+                    <th style="text-align:center;">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in all_summaries %}
+            <tr>
+                <!-- Employee -->
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:36px;height:36px;border-radius:50%;background:{% if item.is_active %}linear-gradient(135deg,#E60000,#CC0000){% elif item.sessions %}linear-gradient(135deg,#2A2A2A,#1A1A1A){% else %}#e2e8f0{% endif %};display:flex;align-items:center;justify-content:center;color:{% if item.sessions %}#fff{% else %}#94a3b8{% endif %};font-weight:700;font-size:0.85rem;flex-shrink:0;">
+                            {{ item.employee.name|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;color:#0f172a;">{{ item.employee.name }}</div>
+                            <div style="font-size:0.75rem;color:#94a3b8;">{{ item.employee.employee_id }}</div>
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Status -->
+                <td>
+                    {% if item.is_active %}
+                    <span style="display:inline-flex;align-items:center;gap:6px;background:#FFF0F0;color:#CC0000;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">
+                        <span style="width:7px;height:7px;background:#E60000;border-radius:50%;animation:pulse 1.5s infinite;"></span>
+                        Active
+                    </span>
+                    {% elif item.is_complete %}
+                    <span style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">✓ Complete</span>
+                    {% elif item.sessions %}
+                    <span style="background:#fef9c3;color:#854d0e;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">Short</span>
+                    {% else %}
+                    <span style="background:#f1f5f9;color:#94a3b8;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">Absent</span>
+                    {% endif %}
+                </td>
+
+                <!-- First In -->
+                <td style="font-size:0.85rem;font-weight:600;color:#166534;">
+                    {% if item.first_punch_in %}{{ item.first_punch_in|time:"h:i A" }}{% else %}<span style="color:#e2e8f0;">—</span>{% endif %}
+                </td>
+
+                <!-- Last Out -->
+                <td style="font-size:0.85rem;font-weight:600;color:#ef4444;">
+                    {% if item.last_punch_out %}{{ item.last_punch_out|time:"h:i A" }}
+                    {% elif item.is_active %}<em style="color:#94a3b8;font-size:0.8rem;">Working…</em>
+                    {% else %}<span style="color:#e2e8f0;">—</span>{% endif %}
+                </td>
+
+                <!-- Progress Bar -->
+                <td>
+                    {% if item.sessions %}
+                    <div style="background:#f1f5f9;border-radius:20px;height:8px;overflow:hidden;min-width:120px;">
+                        <div style="width:{{ item.percent }}%;height:100%;border-radius:20px;background:{% if item.is_complete %}#10b981{% elif item.percent >= 50 %}#f59e0b{% else %}#E60000{% endif %};transition:width 0.3s;"></div>
+                    </div>
+                    <div style="font-size:0.7rem;color:#94a3b8;margin-top:2px;">{{ item.percent }}% of 8h</div>
+                    {% else %}
+                    <span style="color:#e2e8f0;font-size:0.8rem;">—</span>
+                    {% endif %}
+                </td>
+
+                <!-- Worked -->
+                <td>
+                    {% if item.sessions %}
+                    <span style="font-weight:700;color:#0f172a;font-size:0.88rem;">{{ item.total_display }}</span>
+                    {% else %}<span style="color:#e2e8f0;">—</span>{% endif %}
+                </td>
+
+                <!-- Breaks -->
+                <td>
+                    {% if item.break_count > 0 %}
+                    <span style="background:#fffbeb;color:#d97706;border:1px solid #fcd34d;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;">
+                        <i class="bi bi-cup-hot me-1"></i>{{ item.break_count }}
+                    </span>
+                    {% elif item.sessions %}
+                    <span style="color:#94a3b8;font-size:0.8rem;">0</span>
+                    {% else %}
+                    <span style="color:#e2e8f0;">—</span>
+                    {% endif %}
+                </td>
+
+                <!-- Session count -->
+                <td>
+                    {% if item.sessions %}
+                    <span style="background:#FFF0F0;color:#E60000;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;">
+                        {{ item.sessions|length }} session{{ item.sessions|length|pluralize }}
+                    </span>
+                    {% else %}<span style="color:#e2e8f0;">—</span>{% endif %}
+                </td>
+
+                <!-- View Detail -->
+                <td style="text-align:center;">
+                    <a href="/punch/admin/{{ item.employee.pk }}/?date={{ selected_date|date:'Y-m-d' }}"
+                       class="btn btn-icon" style="background:#FFF0F0;color:#E60000;border:1px solid #FFCCCC;" title="View Full Timeline">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Delete Attendance{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Delete Attendance{% endblock %}
+
+{% block content %}
+<div class="card p-4" style="max-width:500px;">
+    <div class="text-center mb-3">
+        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size:3rem;"></i>
+        <h5 class="fw-bold mt-2">Confirm Delete</h5>
+        <p class="text-muted">Delete attendance record for <strong>{{ attendance.employee.name }}</strong> on <strong>{{ attendance.date }}</strong>?</p>
+    </div>
+    <form method="post" class="d-flex justify-content-center gap-3">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Yes, Delete</button>
+        <a href="/attendance/" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i> Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% block title %}{{ employee.name }} — Punch Detail{% endblock %}
+{% block nav_punch %}active{% endblock %}
+{% block page_title %}Employee Punch Detail{% endblock %}
+
+{% block content %}
+
+<!-- Employee Banner -->
+<div class="card mb-4" style="background:linear-gradient(135deg,#1A1A1A 0%,#2A2A2A 60%,#E60000 100%);color:#fff;border-radius:18px;overflow:hidden;position:relative;">
+    <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.04);"></div>
+    <div class="p-4 d-flex align-items-center gap-4" style="position:relative;z-index:1;">
+        <div style="width:60px;height:60px;background:rgba(255,255,255,0.18);border:2px solid rgba(255,255,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:800;flex-shrink:0;">
+            {{ employee.name|slice:":1"|upper }}
+        </div>
+        <div>
+            <h4 style="margin:0;font-weight:800;font-size:1.2rem;">{{ employee.name }}</h4>
+            <p style="margin:4px 0 0;opacity:0.7;font-size:0.85rem;">
+                <i class="bi bi-credit-card-2-front me-1"></i>{{ employee.employee_id }}
+                {% if employee.position %}&nbsp;·&nbsp;<i class="bi bi-briefcase me-1"></i>{{ employee.position }}{% endif %}
+                {% if employee.department %}&nbsp;·&nbsp;<i class="bi bi-building me-1"></i>{{ employee.department }}{% endif %}
+            </p>
+        </div>
+
+        <!-- Date selector -->
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <form method="get" class="d-flex gap-2 align-items-center">
+                <input type="date" name="date" value="{{ selected_date|date:'Y-m-d' }}"
+                       class="form-control form-control-sm"
+                       style="border-radius:10px;border:1.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;font-size:0.83rem;padding:6px 12px;">
+                <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:10px;font-weight:600;font-size:0.83rem;">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </form>
+            <a href="/punch/admin/?date={{ selected_date|date:'Y-m-d' }}" class="btn btn-sm"
+               style="background:rgba(255,255,255,0.1);color:#ccc;border:1px solid rgba(255,255,255,0.2);border-radius:10px;font-weight:600;font-size:0.83rem;">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Date Display -->
+<div class="d-flex align-items-center gap-2 mb-4">
+    <div style="width:6px;height:22px;background:#E60000;border-radius:3px;"></div>
+    <span style="font-weight:700;font-size:1rem;color:#0f172a;">
+        {{ selected_date|date:"l, d F Y" }}
+        {% if selected_date == today %}<span style="background:#FFF0F0;color:#E60000;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;margin-left:8px;">Today</span>{% endif %}
+    </span>
+</div>
+
+<div class="row g-4">
+
+    <!-- ══════════ LEFT — SUMMARY CARD ══════════ -->
+    <div class="col-lg-4">
+
+        <!-- Status + Times -->
+        <div class="card p-4 mb-4 text-center" style="border:2px solid {% if summary.is_active %}#E60000{% elif summary.sessions %}#e2e8f0{% else %}#f1f5f9{% endif %};">
+
+            {% if summary.is_active %}
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#FFF0F0;color:#CC0000;padding:6px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;margin-bottom:16px;">
+                <span style="width:8px;height:8px;background:#E60000;border-radius:50%;animation:pulse 1.5s infinite;"></span>
+                Currently Punched IN
+            </div>
+            {% elif summary.sessions %}
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#f1f5f9;color:#475569;padding:6px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;margin-bottom:16px;">
+                <i class="bi bi-check-circle-fill text-success"></i>
+                Session Ended
+            </div>
+            {% else %}
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#fef9c3;color:#854d0e;padding:6px 18px;border-radius:20px;font-size:0.82rem;font-weight:700;margin-bottom:16px;">
+                <i class="bi bi-calendar-x"></i>
+                No Sessions
+            </div>
+            {% endif %}
+
+            <!-- First In / Last Out -->
+            <div class="d-flex justify-content-center gap-4 mb-4">
+                <div>
+                    <div style="font-size:0.72rem;color:#94a3b8;font-weight:600;text-transform:uppercase;">First In</div>
+                    <div style="font-weight:700;color:#16a34a;font-size:1.1rem;">
+                        {% if summary.first_punch_in %}{{ summary.first_punch_in|time:"h:i A" }}{% else %}—{% endif %}
+                    </div>
+                </div>
+                <div style="width:1px;background:#e2e8f0;"></div>
+                <div>
+                    <div style="font-size:0.72rem;color:#94a3b8;font-weight:600;text-transform:uppercase;">Last Out</div>
+                    <div style="font-weight:700;color:#ef4444;font-size:1.1rem;">
+                        {% if summary.last_punch_out %}{{ summary.last_punch_out|time:"h:i A" }}
+                        {% elif summary.is_active %}<em style="font-size:0.85rem;color:#94a3b8;">Working…</em>
+                        {% else %}—{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span style="font-size:0.78rem;font-weight:600;color:#374151;">Work Progress (8h target)</span>
+                    <span style="font-size:0.78rem;font-weight:700;color:{% if summary.is_complete %}#10b981{% else %}#f59e0b{% endif %};">{{ summary.percent }}%</span>
+                </div>
+                <div style="background:#f1f5f9;border-radius:20px;height:10px;overflow:hidden;">
+                    <div style="width:{{ summary.percent }}%;height:100%;border-radius:20px;background:{% if summary.is_complete %}#10b981{% elif summary.percent >= 50 %}#f59e0b{% else %}#E60000{% endif %};transition:width 0.5s;"></div>
+                </div>
+            </div>
+
+            <!-- Stats row -->
+            <div class="row g-2 text-center">
+                <div class="col-4">
+                    <div style="background:#FFF0F0;border-radius:12px;padding:12px 6px;">
+                        <div style="font-size:1.2rem;font-weight:800;color:#E60000;">{{ summary.total_display }}</div>
+                        <div style="font-size:0.68rem;color:#94a3b8;font-weight:600;">Worked</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div style="background:#fef9c3;border-radius:12px;padding:12px 6px;">
+                        <div style="font-size:1.2rem;font-weight:800;color:#d97706;">{{ summary.break_count }}</div>
+                        <div style="font-size:0.68rem;color:#94a3b8;font-weight:600;">Breaks</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div style="background:#F5F5F5;border-radius:12px;padding:12px 6px;">
+                        <div style="font-size:1.2rem;font-weight:800;color:#1A1A1A;">{{ summary.remaining_display }}</div>
+                        <div style="font-size:0.68rem;color:#94a3b8;font-weight:600;">Remaining</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if summary.is_complete %}
+            <div class="mt-3" style="background:#dcfce7;border-radius:10px;padding:10px;color:#166534;font-weight:700;font-size:0.88rem;">
+                <i class="bi bi-trophy-fill me-1"></i> 8 hours completed!
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- 7-Day History -->
+        <div class="card p-4">
+            <div style="font-weight:700;font-size:0.9rem;color:#0f172a;margin-bottom:16px;">
+                <i class="bi bi-calendar3 me-2" style="color:#1A1A1A;"></i>Last 7 Days
+            </div>
+            {% for day in history %}
+            <a href="/punch/admin/{{ employee.pk }}/?date={{ day.date|date:'Y-m-d' }}" style="text-decoration:none;">
+                <div class="d-flex align-items-center gap-3 mb-2 p-2 rounded-3" style="background:{% if day.is_complete %}#f0fdf4{% elif day.sessions %}#fffbeb{% else %}#f8fafc{% endif %};border:1px solid {% if day.is_complete %}#bbf7d0{% elif day.sessions %}#fde68a{% else %}#f1f5f9{% endif %};">
+                    <div style="flex:1;">
+                        <div style="font-size:0.82rem;font-weight:600;color:#0f172a;">{{ day.date|date:"D, d M" }}</div>
+                        <div style="font-size:0.73rem;color:#94a3b8;">
+                            {% if day.sessions %}{{ day.total_display }} worked · {{ day.break_count }} break{{ day.break_count|pluralize }}
+                            {% else %}No sessions{% endif %}
+                        </div>
+                    </div>
+                    {% if day.is_complete %}
+                    <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">✓</span>
+                    {% elif day.sessions %}
+                    <span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">{{ day.percent }}%</span>
+                    {% else %}
+                    <span style="background:#f1f5f9;color:#94a3b8;padding:2px 8px;border-radius:20px;font-size:0.7rem;font-weight:700;">Absent</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- ══════════ RIGHT — TIMELINE ══════════ -->
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <div style="font-weight:700;font-size:0.9rem;color:#0f172a;margin-bottom:20px;">
+                <i class="bi bi-clock-history me-2" style="color:#E60000;"></i>
+                Session Timeline — {{ selected_date|date:"d M Y" }}
+            </div>
+
+            {% if summary.sessions %}
+            <div>
+                {% for session in summary.sessions %}
+                <!-- Session block -->
+                <div class="d-flex align-items-start gap-3 mb-3">
+                    <div style="flex-shrink:0;width:38px;height:38px;background:{% if session.is_active %}#E60000{% else %}#1A1A1A{% endif %};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.85rem;font-weight:700;">
+                        {{ forloop.counter }}
+                    </div>
+                    <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span style="font-weight:700;font-size:0.88rem;color:#0f172a;">
+                                Session {{ forloop.counter }}
+                                {% if session.is_active %}
+                                <span style="background:#FFF0F0;color:#CC0000;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;margin-left:6px;">
+                                    <span style="display:inline-block;width:6px;height:6px;background:#E60000;border-radius:50%;animation:pulse 1.5s infinite;margin-right:4px;"></span>Active
+                                </span>
+                                {% endif %}
+                            </span>
+                            <span style="font-size:0.88rem;font-weight:800;color:#E60000;">{{ session.duration_display }}</span>
+                        </div>
+                        <div class="d-flex gap-4 flex-wrap" style="font-size:0.83rem;color:#64748b;">
+                            <span>
+                                <i class="bi bi-box-arrow-in-right me-1" style="color:#16a34a;"></i>
+                                <strong style="color:#0f172a;">IN:</strong> {{ session.punch_in|time:"h:i A" }}
+                            </span>
+                            <span>
+                                {% if session.punch_out %}
+                                <i class="bi bi-box-arrow-right me-1" style="color:#ef4444;"></i>
+                                <strong style="color:#0f172a;">OUT:</strong> {{ session.punch_out|time:"h:i A" }}
+                                {% else %}
+                                <i class="bi bi-three-dots me-1" style="color:#94a3b8;"></i>
+                                <strong>OUT:</strong> <em style="color:#94a3b8;">Never closed</em>
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if not session.punch_out %}
+                        <!-- Force Close form -->
+                        <div class="mt-3 p-3 rounded-3" style="background:#fff3cd;border:1px solid #ffc107;">
+                            <div style="font-size:0.78rem;color:#856404;font-weight:600;margin-bottom:8px;">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                This session was never closed. Set the correct punch-out time:
+                            </div>
+                            <form method="post" action="/punch/admin/close/{{ session.pk }}/" class="d-flex gap-2 flex-wrap align-items-center">
+                                {% csrf_token %}
+                                <input type="datetime-local" name="close_time"
+                                       value="{{ session.punch_in|date:'Y-m-d' }}T17:30"
+                                       class="form-control form-control-sm"
+                                       style="max-width:220px;border-radius:8px;border:1px solid #ffc107;font-size:0.82rem;">
+                                <button type="submit" class="btn btn-sm" style="background:#E60000;color:#fff;border-radius:8px;font-weight:600;font-size:0.82rem;padding:5px 14px;">
+                                    <i class="bi bi-x-circle me-1"></i>Close Session
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Break between sessions -->
+                {% if not forloop.last %}
+                {% with break=summary.breaks|slice:forloop.counter0|first %}
+                {% if break %}
+                <div class="d-flex align-items-start gap-3 mb-3" style="opacity:0.75;">
+                    <div style="flex-shrink:0;width:38px;height:38px;background:#f59e0b;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.85rem;">
+                        <i class="bi bi-cup-hot-fill"></i>
+                    </div>
+                    <div style="flex:1;background:#fffbeb;border:1px dashed #fcd34d;border-radius:12px;padding:12px 18px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span style="font-weight:600;font-size:0.84rem;color:#92400e;">
+                                Break {{ break.number }} &nbsp;·&nbsp; {{ break.display }}
+                            </span>
+                            <span style="font-size:0.79rem;color:#a16207;">
+                                {{ break.start|time:"h:i A" }} → {{ break.end|time:"h:i A" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% endif %}
+                {% endfor %}
+
+                <!-- Break Summary Footer -->
+                {% if summary.breaks %}
+                <div style="background:#f8fafc;border-radius:10px;padding:12px 16px;margin-top:4px;display:flex;gap:24px;font-size:0.83rem;color:#64748b;flex-wrap:wrap;">
+                    <span><i class="bi bi-cup-hot me-1 text-warning"></i><strong>{{ summary.break_count }}</strong> break(s)</span>
+                    <span><i class="bi bi-hourglass-split me-1 text-warning"></i>Total break time: <strong>{{ summary.total_break_display }}</strong></span>
+                    <span><i class="bi bi-clock me-1" style="color:#E60000;"></i>Net work time: <strong style="color:#E60000;">{{ summary.total_display }}</strong></span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% else %}
+            <div class="empty-state" style="padding:60px 20px;">
+                <i class="bi bi-calendar-x" style="font-size:3rem;color:#cbd5e1;display:block;margin-bottom:12px;"></i>
+                <p style="color:#94a3b8;margin:0;font-size:0.9rem;">No punch sessions recorded for <strong>{{ selected_date|date:"d M Y" }}</strong>.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+</style>
+{% endblock %}

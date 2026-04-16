@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Apply Leave{% endblock %}
+{% block nav_leave %}active{% endblock %}
+{% block page_title %}Apply Leave{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-xl-7">
+<div class="card">
+    <div class="p-4 border-bottom d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;background:#fffbeb;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#d97706;font-size:1.1rem;">
+            <i class="bi bi-calendar-x"></i>
+        </div>
+        <div>
+            <h5 style="margin:0;font-weight:700;">Apply for Leave</h5>
+            <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Submit a new leave request</p>
+        </div>
+    </div>
+    <div class="p-4">
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Employee <span class="text-danger">*</span></label>
+                <select name="employee" class="form-select" required>
+                    <option value="">— Select Employee —</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.pk }}">{{ emp.employee_id }} — {{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Leave Type <span class="text-danger">*</span></label>
+                <select name="leave_type" class="form-select" required>
+                    <option value="">— Select Type —</option>
+                    {% for lt in leave_types %}
+                    <option value="{{ lt.pk }}">{{ lt.name }} (Max: {{ lt.max_days }} days)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">From Date <span class="text-danger">*</span></label>
+                <input type="date" name="start_date" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">To Date <span class="text-danger">*</span></label>
+                <input type="date" name="end_date" class="form-control" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Reason <span class="text-danger">*</span></label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="Explain the reason for leave..." required></textarea>
+            </div>
+            <div class="col-12 d-flex gap-2 pt-2 border-top mt-2">
+                <button type="submit" class="btn px-4" style="background:#f59e0b;color:#fff;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-send me-1"></i> Submit Request
+                </button>
+                <a href="/leave/" class="btn" style="background:#f1f5f9;color:#475569;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Performance Reviews{% endblock %}
+{% block nav_performance %}active{% endblock %}
+{% block page_title %}Performance Reviews{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background:linear-gradient(135deg,#E60000,#CC0000);">
+            <div class="stat-label"><i class="bi bi-clipboard-check me-1"></i> Total Reviews</div>
+            <div class="stat-number">{{ total }}</div>
+            <div class="stat-sub">All reviews</div>
+            <div class="stat-icon-wrap"><i class="bi bi-clipboard-data-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background:linear-gradient(135deg,#FFCC00,#E6B800);color:#1A1A1A;">
+            <div class="stat-label"><i class="bi bi-star-half me-1"></i> Average Rating</div>
+            <div class="stat-number">{{ avg_rating|default:"—" }}</div>
+            <div class="stat-sub">Out of 5</div>
+            <div class="stat-icon-wrap"><i class="bi bi-star-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background:linear-gradient(135deg,#2A2A2A,#1A1A1A);">
+            <div class="stat-label"><i class="bi bi-star me-1"></i> Excellent (5★)</div>
+            <div class="stat-number">{{ excellent_count }}</div>
+            <div class="stat-sub">Top performers</div>
+            <div class="stat-icon-wrap"><i class="bi bi-award-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background:linear-gradient(135deg,#555,#3A3A3A);">
+            <div class="stat-label"><i class="bi bi-hourglass-split me-1"></i> Pending (Draft)</div>
+            <div class="stat-number">{{ pending_count }}</div>
+            <div class="stat-sub">Awaiting submission</div>
+            <div class="stat-icon-wrap"><i class="bi bi-file-earmark-text"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters + Add Button -->
+<div class="card mb-4 p-3">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+        <form method="get" class="d-flex flex-wrap gap-2 flex-grow-1">
+            <select name="employee" class="form-select" style="width:200px;font-size:0.84rem;">
+                <option value="">All Employees</option>
+                {% for emp in employees %}
+                <option value="{{ emp.pk }}" {% if emp_filter == emp.pk|stringformat:"s" %}selected{% endif %}>{{ emp.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="period" class="form-select" style="width:160px;font-size:0.84rem;">
+                <option value="">All Periods</option>
+                {% for val, label in period_choices %}
+                <option value="{{ val }}" {% if period_filter == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="year" class="form-select" style="width:120px;font-size:0.84rem;">
+                <option value="">All Years</option>
+                {% for y in years %}
+                <option value="{{ y }}" {% if year_filter == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm" style="background:#F5F5F5;color:#1A1A1A;border-radius:8px;border:1px solid #E0E0E0;font-weight:600;padding:7px 18px;">
+                <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+            <a href="{% url 'review_list' %}" class="btn btn-sm" style="background:#fff;color:#888;border-radius:8px;border:1px solid #E0E0E0;font-weight:600;padding:7px 14px;">Clear</a>
+        </form>
+        <a href="{% url 'review_create' %}" class="btn btn-primary" style="border-radius:10px;padding:8px 20px;white-space:nowrap;">
+            <i class="bi bi-plus-circle me-2"></i>Add Review
+        </a>
+    </div>
+</div>
+
+<!-- Reviews Table -->
+<div class="card">
+    <div class="p-3">
+        {% if reviews %}
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Period / Year</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                    <th>Reviewer</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for r in reviews %}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="emp-avatar">{{ r.employee.name|slice:":1"|upper }}</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.85rem;">{{ r.employee.name }}</div>
+                            <div style="font-size:0.75rem;color:#aaa;">{{ r.employee.employee_id }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="font-weight:600;font-size:0.86rem;">{{ r.get_period_display }}</div>
+                    <div style="font-size:0.76rem;color:#aaa;">{{ r.year }}</div>
+                </td>
+                <td>
+                    <div style="color:#FFCC00;font-size:1rem;letter-spacing:1px;">
+                        {% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}
+                    </div>
+                    <div style="font-size:0.74rem;color:#888;">{{ r.get_rating_display }}</div>
+                </td>
+                <td>
+                    {% if r.status == 'draft' %}
+                    <span class="badge-status badge-draft">Draft</span>
+                    {% elif r.status == 'submitted' %}
+                    <span class="badge-status badge-approved">Submitted</span>
+                    {% else %}
+                    <span style="background:#F5F5F5;color:#1A1A1A;padding:5px 13px;border-radius:20px;font-size:0.73rem;font-weight:600;">Acknowledged</span>
+                    {% endif %}
+                </td>
+                <td style="font-size:0.84rem;color:#555;">{{ r.reviewed_by|default:"—" }}</td>
+                <td style="font-size:0.82rem;color:#888;">{{ r.created_at|date:"d M Y" }}</td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'review_detail' r.pk %}" class="btn btn-icon" style="background:#FFF0F0;color:#E60000;border:none;" title="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <form method="post" action="{% url 'review_delete' r.pk %}" onsubmit="return confirm('Delete this review?')" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-icon" style="background:#fee2e2;color:#dc2626;border:none;" title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-clipboard-data"></i>
+            <p>No performance reviews found.</p>
+            <a href="{% url 'review_create' %}" class="btn btn-sm btn-primary">Create First Review</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

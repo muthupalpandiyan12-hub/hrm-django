@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block title %}Holiday Calendar{% endblock %}
+{% block nav_holidays %}active{% endblock %}
+{% block page_title %}Holiday Calendar{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left: Add Holiday Form -->
+    <div class="col-lg-4">
+        <div class="card p-4">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width:6px;height:22px;background:#E60000;border-radius:3px;"></div>
+                <span style="font-size:0.95rem;font-weight:700;color:#1A1A1A;">Add Holiday</span>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Holiday Name <span style="color:#E60000;">*</span></label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Republic Day" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date <span style="color:#E60000;">*</span></label>
+                    <input type="date" name="date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Type <span style="color:#E60000;">*</span></label>
+                    <select name="holiday_type" class="form-select">
+                        {% for val, label in type_choices %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Description</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Optional description..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" style="border-radius:10px;padding:10px;">
+                    <i class="bi bi-plus-circle me-2"></i>Add Holiday
+                </button>
+            </form>
+        </div>
+
+        <!-- Legend -->
+        <div class="card p-3 mt-3">
+            <div style="font-size:0.8rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">Legend</div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span style="background:#E60000;color:#fff;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Public</span>
+                <span style="font-size:0.82rem;color:#555;">Public Holiday</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span style="background:#1A1A1A;color:#fff;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Company</span>
+                <span style="font-size:0.82rem;color:#555;">Company Holiday</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span style="background:#FFCC00;color:#1A1A1A;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Optional</span>
+                <span style="font-size:0.82rem;color:#555;">Optional Holiday</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: Holidays Table -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="p-4 pb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:6px;height:22px;background:#E60000;border-radius:3px;"></div>
+                    <span style="font-size:0.95rem;font-weight:700;color:#1A1A1A;">All Holidays</span>
+                    <span style="background:#F5F5F5;color:#666;padding:2px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;margin-left:4px;">{{ holiday_data|length }} total</span>
+                </div>
+            </div>
+            <div class="p-3">
+                {% if holiday_data %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Holiday</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Days Until</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in holiday_data %}
+                    {% with h=item.holiday %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:600;font-size:0.86rem;color:#1A1A1A;">{{ h.name }}</div>
+                            {% if h.description %}
+                            <div style="font-size:0.75rem;color:#888;margin-top:2px;">{{ h.description|truncatechars:60 }}</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span style="font-size:0.86rem;font-weight:600;color:#333;">{{ h.date|date:"d M Y" }}</span>
+                            <div style="font-size:0.72rem;color:#aaa;">{{ h.date|date:"l" }}</div>
+                        </td>
+                        <td>
+                            {% if h.holiday_type == 'public' %}
+                            <span style="background:#E60000;color:#fff;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Public</span>
+                            {% elif h.holiday_type == 'company' %}
+                            <span style="background:#1A1A1A;color:#fff;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Company</span>
+                            {% else %}
+                            <span style="background:#FFCC00;color:#1A1A1A;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Optional</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.days_until is not None %}
+                                {% if item.days_until == 0 %}
+                                <span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;">Today!</span>
+                                {% elif item.days_until <= 7 %}
+                                <span style="background:#fff7ed;color:#c2410c;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">{{ item.days_until }} day{{ item.days_until|pluralize }} away</span>
+                                {% elif item.days_until <= 30 %}
+                                <span style="background:#FFF9E6;color:#CC9900;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">{{ item.days_until }} days</span>
+                                {% else %}
+                                <span style="font-size:0.82rem;color:#aaa;">{{ item.days_until }} days</span>
+                                {% endif %}
+                            {% else %}
+                            <span style="font-size:0.82rem;color:#ccc;">Past</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="post" action="{% url 'holiday_delete' h.pk %}" style="display:inline;" onsubmit="return confirm('Delete this holiday?')">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-icon" style="background:#fee2e2;color:#dc2626;border:none;" title="Delete">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="bi bi-calendar-event"></i>
+                    <p>No holidays added yet. Use the form to add holidays.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

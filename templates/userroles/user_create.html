@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Create User{% endblock %}
+{% block page_title %}Create User Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-xl-6">
+<div class="card">
+    <div class="p-4 border-bottom d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;background:#FFF0F0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#E60000;font-size:1.1rem;">
+            <i class="bi bi-person-plus"></i>
+        </div>
+        <div>
+            <h5 style="margin:0;font-weight:700;">Create User Account</h5>
+            <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Create login credentials for an employee</p>
+        </div>
+    </div>
+    <div class="p-4">
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Username <span class="text-danger">*</span></label>
+                <input type="text" name="username" class="form-control" placeholder="e.g. emp001" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Password <span class="text-danger">*</span></label>
+                <input type="password" name="password" class="form-control" placeholder="Set a password" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Role <span class="text-danger">*</span></label>
+                <select name="role" class="form-select">
+                    <option value="employee">👤 Employee</option>
+                    <option value="admin">🛡️ Admin / HR Manager</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Link to Employee</label>
+                <select name="employee" class="form-select">
+                    <option value="">— Select Employee (optional) —</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.pk }}">{{ emp.employee_id }} — {{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12">
+                <div class="p-3 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
+                    <p style="margin:0;font-size:0.83rem;color:#92400e;">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Important:</strong> Link the user to an employee so they can view their own profile, attendance, leaves and payslips after login.
+                    </p>
+                </div>
+            </div>
+            <div class="col-12 d-flex gap-2 pt-2 border-top mt-2">
+                <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;font-weight:600;">
+                    <i class="bi bi-check-circle me-1"></i> Create Account
+                </button>
+                <a href="/users/" class="btn" style="background:#f1f5f9;color:#475569;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

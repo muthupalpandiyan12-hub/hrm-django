@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Generate Payroll{% endblock %}
+{% block nav_payroll %}active{% endblock %}
+{% block page_title %}Generate Payroll{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-xl-7">
+<div class="card">
+    <div class="p-4 border-bottom d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;background:#faf5ff;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#8b5cf6;font-size:1.1rem;">
+            <i class="bi bi-cash-stack"></i>
+        </div>
+        <div>
+            <h5 style="margin:0;font-weight:700;">Generate Payroll</h5>
+            <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Create or update payroll for an employee</p>
+        </div>
+    </div>
+    <div class="p-4">
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label">Employee <span class="text-danger">*</span></label>
+                <select name="employee" class="form-select" required>
+                    <option value="">— Select Employee —</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.pk }}">{{ emp.employee_id }} — {{ emp.name }} (₹{{ emp.salary }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Month <span class="text-danger">*</span></label>
+                <select name="month" class="form-select" required>
+                    {% for m in months %}
+                    <option value="{{ m }}" {% if m == today.month %}selected{% endif %}>
+                        {% if m == 1 %}January{% elif m == 2 %}February{% elif m == 3 %}March{% elif m == 4 %}April{% elif m == 5 %}May{% elif m == 6 %}June{% elif m == 7 %}July{% elif m == 8 %}August{% elif m == 9 %}September{% elif m == 10 %}October{% elif m == 11 %}November{% else %}December{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Year <span class="text-danger">*</span></label>
+                <select name="year" class="form-select" required>
+                    {% for y in years %}
+                    <option value="{{ y }}" {% if y == today.year %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Salary Breakdown -->
+            <div class="col-12 mt-2">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div style="width:5px;height:18px;background:#8b5cf6;border-radius:3px;"></div>
+                    <span style="font-size:0.82rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;">Salary Breakdown</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Basic Salary (₹)</label>
+                <input type="number" name="basic_salary" class="form-control" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Allowances (₹) <span style="color:#10b981;font-size:0.75rem;">+</span></label>
+                <input type="number" name="allowances" class="form-control" step="0.01" min="0" value="0">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Deductions (₹) <span style="color:#ef4444;font-size:0.75rem;">-</span></label>
+                <input type="number" name="deductions" class="form-control" step="0.01" min="0" value="0">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Payment Status</label>
+                <select name="status" class="form-select">
+                    <option value="draft">📋 Draft</option>
+                    <option value="paid">✅ Paid</option>
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2 pt-2 border-top mt-2">
+                <button type="submit" class="btn px-4" style="background:#8b5cf6;color:#fff;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-check-circle me-1"></i> Generate Payroll
+                </button>
+                <a href="/payroll/" class="btn" style="background:#f1f5f9;color:#475569;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

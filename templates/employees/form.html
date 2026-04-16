@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} Employee{% endblock %}
+{% block nav_employees %}active{% endblock %}
+{% block page_title %}{{ action }} Employee{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-xl-8">
+<div class="card">
+    <div class="p-4 border-bottom d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;background:#FFF0F0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#E60000;font-size:1.1rem;">
+            <i class="bi bi-person-plus"></i>
+        </div>
+        <div>
+            <h5 style="margin:0;font-weight:700;">{{ action }} Employee</h5>
+            <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Fill in the details below</p>
+        </div>
+    </div>
+
+    <div class="p-4">
+    <form method="post">
+        {% csrf_token %}
+        <!-- Section: Personal Info -->
+        <div class="mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="width:5px;height:18px;background:#E60000;border-radius:3px;"></div>
+                <span style="font-size:0.82rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;">Personal Information</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Employee ID <span class="text-danger">*</span></label>
+                    <input type="text" name="employee_id" class="form-control" value="{{ employee.employee_id|default:'' }}" placeholder="e.g. EMP001" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                    <input type="text" name="name" class="form-control" value="{{ employee.name|default:'' }}" placeholder="Enter full name" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                    <input type="email" name="email" class="form-control" value="{{ employee.email|default:'' }}" placeholder="email@company.com" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone" class="form-control" value="{{ employee.phone|default:'' }}" placeholder="+91 00000 00000">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" class="form-select">
+                        <option value="">— Select Gender —</option>
+                        <option value="M" {% if employee.gender == 'M' %}selected{% endif %}>Male</option>
+                        <option value="F" {% if employee.gender == 'F' %}selected{% endif %}>Female</option>
+                        <option value="O" {% if employee.gender == 'O' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" name="date_of_birth" class="form-control" value="{{ employee.date_of_birth|default:'' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" class="form-control" rows="2" placeholder="Enter full address">{{ employee.address|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Job Info -->
+        <div class="mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="width:5px;height:18px;background:#FFCC00;border-radius:3px;"></div>
+                <span style="font-size:0.82rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;">Job Information</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Department</label>
+                    <select name="department" class="form-select">
+                        <option value="">— Select Department —</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.pk }}" {% if employee.department_id == dept.pk %}selected{% endif %}>{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Position / Role</label>
+                    <input type="text" name="position" class="form-control" value="{{ employee.position|default:'' }}" placeholder="e.g. Software Engineer">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Salary (₹)</label>
+                    <input type="number" name="salary" class="form-control" value="{{ employee.salary|default:'0' }}" step="0.01" placeholder="0.00">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Employment Status</label>
+                    <select name="status" class="form-select">
+                        <option value="active" {% if employee.status == 'active' %}selected{% endif %}>✅ Active</option>
+                        <option value="inactive" {% if employee.status == 'inactive' %}selected{% endif %}>⏸️ Inactive</option>
+                        <option value="terminated" {% if employee.status == 'terminated' %}selected{% endif %}>❌ Terminated</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        {% if action == 'Edit' %}
+        <!-- Section: Salary Change Reason (only on Edit) -->
+        <div class="mb-4" id="salaryChangeSection" style="display:none;">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="width:5px;height:18px;background:#1A1A1A;border-radius:3px;"></div>
+                <span style="font-size:0.82rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em;">Salary Change Reason</span>
+                <span style="background:#FFF0F0;color:#E60000;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;margin-left:4px;">Auto-detected change</span>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Reason Type</label>
+                    <select name="salary_change_reason_type" class="form-select">
+                        <option value="appraisal">Annual Appraisal</option>
+                        <option value="promotion">Promotion</option>
+                        <option value="correction">Correction</option>
+                        <option value="joining">Joining</option>
+                        <option value="other" selected>Other</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Notes / Reason</label>
+                    <input type="text" name="salary_change_reason" class="form-control" placeholder="e.g. Annual increment for FY 2025-26">
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2 pt-2 border-top mt-2">
+            <button type="submit" class="btn btn-primary px-4" style="border-radius:10px;font-weight:600;">
+                <i class="bi bi-check-circle me-1"></i> {{ action }} Employee
+            </button>
+            <a href="/employees/" class="btn" style="border-radius:10px;font-weight:600;background:#f1f5f9;color:#475569;">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+            </a>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
+</div>
+
+{% block extra_js %}
+{% if action == 'Edit' %}
+<script>
+(function() {
+    const salaryInput = document.querySelector('input[name="salary"]');
+    const section = document.getElementById('salaryChangeSection');
+    if (!salaryInput || !section) return;
+    const originalValue = parseFloat(salaryInput.value);
+    salaryInput.addEventListener('change', function() {
+        if (parseFloat(this.value) !== originalValue) {
+            section.style.display = 'block';
+        } else {
+            section.style.display = 'none';
+        }
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}
+{% endblock %}

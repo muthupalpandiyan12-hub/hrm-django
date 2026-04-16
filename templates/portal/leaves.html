@@ -1,0 +1,144 @@
+{% extends 'portal/base_portal.html' %}
+{% block title %}My Leaves{% endblock %}
+{% block nav_leaves %}active{% endblock %}
+{% block page_title %}My Leaves{% endblock %}
+
+{% block content %}
+<!-- Summary -->
+<div class="row g-3 mb-4">
+    <div class="col-4">
+        <div class="stat-card" style="background:linear-gradient(135deg,#FFCC00,#E6B800);color:#1A1A1A;">
+            <div class="stat-label">Pending</div>
+            <div class="stat-number">{{ pending }}</div>
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="stat-card" style="background:linear-gradient(135deg,#2A2A2A,#1A1A1A);">
+            <div class="stat-label">Approved</div>
+            <div class="stat-number">{{ approved }}</div>
+            <div class="stat-icon"><i class="bi bi-patch-check-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="stat-card" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+            <div class="stat-label">Rejected</div>
+            <div class="stat-number">{{ rejected }}</div>
+            <div class="stat-icon"><i class="bi bi-x-octagon-fill"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Leave Balance Section -->
+{% if balances %}
+<div class="card mb-4 p-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div style="width:6px;height:20px;background:#E60000;border-radius:3px;"></div>
+        <span style="font-weight:700;font-size:0.95rem;color:#0f172a;">My Leave Balance</span>
+    </div>
+    <div class="row g-3">
+        {% for b in balances %}
+        <div class="col-md-4">
+            <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #e2e8f0;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span style="font-size:0.85rem;font-weight:700;color:#0f172a;">{{ b.leave_type.name }}</span>
+                    <span style="font-size:0.75rem;color:#94a3b8;">Max: {{ b.total }} days</span>
+                </div>
+                <div style="background:#e2e8f0;border-radius:20px;height:7px;margin-bottom:10px;overflow:hidden;">
+                    <div style="width:{{ b.percent }}%;background:{% if b.percent >= 80 %}#ef4444{% elif b.percent >= 50 %}#f59e0b{% else %}#10b981{% endif %};height:100%;border-radius:20px;"></div>
+                </div>
+                <div class="d-flex justify-content-between text-center">
+                    <div>
+                        <div style="font-size:1rem;font-weight:800;color:#ef4444;">{{ b.used }}</div>
+                        <div style="font-size:0.7rem;color:#94a3b8;">Used</div>
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:800;color:#10b981;">{{ b.remaining }}</div>
+                        <div style="font-size:0.7rem;color:#94a3b8;">Remaining</div>
+                    </div>
+                    <div>
+                        <div style="font-size:1rem;font-weight:800;color:#E60000;">{{ b.total }}</div>
+                        <div style="font-size:0.7rem;color:#94a3b8;">Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Apply Leave Form -->
+    <div class="col-md-4">
+        <div class="card p-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="width:6px;height:20px;background:#E60000;border-radius:3px;"></div>
+                <span style="font-weight:700;font-size:0.95rem;">Apply for Leave</span>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Leave Type <span class="text-danger">*</span></label>
+                    <select name="leave_type" class="form-select" required>
+                        <option value="">— Select Type —</option>
+                        {% for lt in leave_types %}
+                        <option value="{{ lt.pk }}">{{ lt.name }} (Max: {{ lt.max_days }} days)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">From Date <span class="text-danger">*</span></label>
+                    <input type="date" name="start_date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">To Date <span class="text-danger">*</span></label>
+                    <input type="date" name="end_date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Reason <span class="text-danger">*</span></label>
+                    <textarea name="reason" class="form-control" rows="3" placeholder="Reason for leave..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-green w-100">
+                    <i class="bi bi-send me-1"></i> Submit Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leave History -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="p-4 pb-0">
+                <span style="font-weight:700;font-size:0.95rem;">My Leave History</span>
+            </div>
+            <div class="table-responsive p-2">
+                <table class="table mb-0">
+                    <thead>
+                        <tr><th>Leave Type</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for l in leaves %}
+                    <tr>
+                        <td style="font-weight:600;font-size:0.85rem;">{{ l.leave_type }}</td>
+                        <td style="font-size:0.85rem;">{{ l.start_date }}</td>
+                        <td style="font-size:0.85rem;">{{ l.end_date }}</td>
+                        <td style="font-weight:700;">{{ l.total_days }}</td>
+                        <td style="font-size:0.82rem;color:#64748b;">{{ l.reason|truncatechars:30 }}</td>
+                        <td><span class="badge-status badge-{{ l.status }}">{{ l.status|title }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <p>No leave requests yet</p>
+                        </div>
+                    </td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

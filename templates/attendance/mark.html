@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Mark Attendance{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+{% block page_title %}Mark Attendance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-xl-7">
+<div class="card">
+    <div class="p-4 border-bottom d-flex align-items-center gap-3">
+        <div style="width:42px;height:42px;background:#FFF0F0;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#E60000;font-size:1.1rem;">
+            <i class="bi bi-calendar-check"></i>
+        </div>
+        <div>
+            <h5 style="margin:0;font-weight:700;">Mark Attendance</h5>
+            <p style="margin:0;font-size:0.8rem;color:#94a3b8;">Record employee attendance for a date</p>
+        </div>
+    </div>
+    <div class="p-4">
+    <form method="post">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Employee <span class="text-danger">*</span></label>
+                <select name="employee" class="form-select" required>
+                    <option value="">— Select Employee —</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.pk }}">{{ emp.employee_id }} — {{ emp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Date <span class="text-danger">*</span></label>
+                <input type="date" name="date" class="form-control" value="{{ today }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Check In Time</label>
+                <input type="time" name="check_in" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Check Out Time</label>
+                <input type="time" name="check_out" class="form-control">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Status <span class="text-danger">*</span></label>
+                <select name="status" class="form-select" required>
+                    <option value="present">✅ Present</option>
+                    <option value="absent">❌ Absent</option>
+                    <option value="half_day">⏸️ Half Day</option>
+                    <option value="late">⏰ Late</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Note (Optional)</label>
+                <input type="text" name="note" class="form-control" placeholder="Add a note...">
+            </div>
+            <div class="col-12 d-flex gap-2 pt-2 border-top mt-2">
+                <button type="submit" class="btn px-4" style="background:#E60000;color:#fff;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-check-circle me-1"></i> Save Attendance
+                </button>
+                <a href="/attendance/" class="btn" style="background:#f1f5f9;color:#475569;border-radius:10px;font-weight:600;">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+    </div>
+</div>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background: linear-gradient(135deg,#E60000,#CC0000);">
+            <div class="stat-label"><i class="bi bi-people me-1"></i> Total Employees</div>
+            <div class="stat-number">{{ total_employees }}</div>
+            <div class="stat-sub">Active staff members</div>
+            <div class="stat-icon-wrap"><i class="bi bi-people-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background: linear-gradient(135deg,#2A2A2A,#1A1A1A);">
+            <div class="stat-label"><i class="bi bi-calendar-check me-1"></i> Present Today</div>
+            <div class="stat-number">{{ present_today }}</div>
+            <div class="stat-sub">Checked in today</div>
+            <div class="stat-icon-wrap"><i class="bi bi-calendar-check-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background: linear-gradient(135deg,#FFCC00,#E6B800);color:#1A1A1A;">
+            <div class="stat-label"><i class="bi bi-hourglass-split me-1"></i> Pending Leaves</div>
+            <div class="stat-number">{{ pending_leaves }}</div>
+            <div class="stat-sub">Awaiting approval</div>
+            <div class="stat-icon-wrap"><i class="bi bi-calendar-x-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card card" style="background: linear-gradient(135deg,#555,#3A3A3A);">
+            <div class="stat-label"><i class="bi bi-cash me-1"></i> Payroll Paid</div>
+            <div class="stat-number">{{ paid_this_month }}</div>
+            <div class="stat-sub">This month</div>
+            <div class="stat-icon-wrap"><i class="bi bi-cash-stack"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mb-4 p-3">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <div style="width:6px;height:20px;background:#E60000;border-radius:3px;"></div>
+        <span class="fw-700" style="font-size:0.95rem;font-weight:700;">Quick Actions</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="/employees/add/" class="btn btn-sm px-3 py-2" style="background:#FFF0F0;color:#E60000;border-radius:10px;font-weight:600;font-size:0.83rem;border:1px solid #FFCCCC;">
+            <i class="bi bi-person-plus me-1"></i> Add Employee
+        </a>
+        <a href="/attendance/mark/" class="btn btn-sm px-3 py-2" style="background:#FFF0F0;color:#E60000;border-radius:10px;font-weight:600;font-size:0.83rem;border:1px solid #FFCCCC;">
+            <i class="bi bi-calendar-check me-1"></i> Mark Attendance
+        </a>
+        <a href="/leave/apply/" class="btn btn-sm px-3 py-2" style="background:#FFF9E6;color:#CC9900;border-radius:10px;font-weight:600;font-size:0.83rem;border:1px solid #FFCC00;">
+            <i class="bi bi-calendar-x me-1"></i> Apply Leave
+        </a>
+        <a href="/payroll/generate/" class="btn btn-sm px-3 py-2" style="background:#F5F5F5;color:#1A1A1A;border-radius:10px;font-weight:600;font-size:0.83rem;border:1px solid #E0E0E0;">
+            <i class="bi bi-cash me-1"></i> Generate Payroll
+        </a>
+        <a href="/admin/" class="btn btn-sm px-3 py-2" style="background:#f8fafc;color:#475569;border-radius:10px;font-weight:600;font-size:0.83rem;border:1px solid #e2e8f0;">
+            <i class="bi bi-shield-lock me-1"></i> Admin Panel
+        </a>
+    </div>
+</div>
+
+<!-- Announcements + Birthdays Row -->
+<div class="row g-4 mb-4">
+
+    <!-- Announcements Widget -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="p-4 pb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:6px;height:20px;background:#E60000;border-radius:3px;"></div>
+                    <span style="font-size:0.95rem;font-weight:700;color:#0f172a;"><i class="bi bi-megaphone-fill me-2" style="color:#E60000;"></i>Announcements</span>
+                </div>
+                <a href="/core/announcements/" style="font-size:0.78rem;color:#E60000;text-decoration:none;font-weight:600;">View All →</a>
+            </div>
+            <div class="p-3">
+                {% if active_announcements %}
+                {% for a in active_announcements|slice:":4" %}
+                <div class="mb-2 p-3 rounded-3" style="background:#f8fafc;border-left:3px solid {% if a.priority == 'urgent' %}#E60000{% elif a.priority == 'high' %}#FFCC00{% elif a.priority == 'medium' %}#1A1A1A{% else %}#ccc{% endif %};">
+                    <div class="d-flex align-items-start gap-2">
+                        <div style="flex:1;">
+                            <div style="font-size:0.84rem;font-weight:700;color:#1e293b;margin-bottom:3px;">{{ a.title }}</div>
+                            <div style="font-size:0.76rem;color:#64748b;">{{ a.content|truncatechars:80 }}</div>
+                        </div>
+                        {% if a.priority == 'urgent' %}
+                        <span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;flex-shrink:0;">Urgent</span>
+                        {% elif a.priority == 'high' %}
+                        <span style="background:#FFF9E6;color:#CC9900;padding:2px 8px;border-radius:20px;font-size:0.68rem;font-weight:700;flex-shrink:0;border:1px solid #FFCC00;">High</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="empty-state" style="padding:30px;">
+                    <i class="bi bi-megaphone" style="font-size:2rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
+                    <p style="color:#94a3b8;margin:0;font-size:0.85rem;">No active announcements.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Birthdays & Anniversaries Widget -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="p-4 pb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:6px;height:20px;background:#FFCC00;border-radius:3px;"></div>
+                    <span style="font-size:0.95rem;font-weight:700;color:#0f172a;">Upcoming Events</span>
+                </div>
+            </div>
+            <div class="p-3">
+                {% for item in upcoming_birthdays %}
+                <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:#f8fafc;">
+                    <div style="font-size:1.4rem;flex-shrink:0;">🎂</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.84rem;font-weight:600;color:#1e293b;">{{ item.employee.name }}</div>
+                        <div style="font-size:0.76rem;color:#94a3b8;">Birthday — {{ item.date|date:"d M" }}</div>
+                    </div>
+                    {% if item.days_until == 0 %}
+                    <span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;">Today!</span>
+                    {% else %}
+                    <span style="background:#FFF9E6;color:#CC9900;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">{{ item.days_until }}d</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% for item in upcoming_anniversaries %}
+                <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:#f8fafc;">
+                    <div style="font-size:1.4rem;flex-shrink:0;">🎉</div>
+                    <div style="flex:1;">
+                        <div style="font-size:0.84rem;font-weight:600;color:#1e293b;">{{ item.employee.name }}</div>
+                        <div style="font-size:0.76rem;color:#94a3b8;">{{ item.years }} Year Anniversary — {{ item.date|date:"d M" }}</div>
+                    </div>
+                    {% if item.days_until == 0 %}
+                    <span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;">Today!</span>
+                    {% else %}
+                    <span style="background:#FFF0F0;color:#E60000;padding:2px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">{{ item.days_until }}d</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if not upcoming_birthdays and not upcoming_anniversaries %}
+                <div class="empty-state" style="padding:30px;">
+                    <i class="bi bi-calendar-heart" style="font-size:2rem;color:#e2e8f0;display:block;margin-bottom:8px;"></i>
+                    <p style="color:#94a3b8;margin:0;font-size:0.85rem;">No upcoming birthdays or anniversaries in next 30 days.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tables Row -->
+<div class="row g-4">
+    <!-- Recent Employees -->
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="p-4 pb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:6px;height:20px;background:#E60000;border-radius:3px;"></div>
+                    <span style="font-size:0.95rem;font-weight:700;color:#0f172a;">Recent Employees</span>
+                </div>
+                <a href="/employees/" class="btn btn-sm" style="background:#FFF0F0;color:#E60000;border-radius:8px;font-size:0.78rem;font-weight:600;border:1px solid #FFCCCC;">View All <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+            <div class="p-3">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Position</th>
+                            <th>Dept</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for emp in recent_employees %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="emp-avatar">{{ emp.name|slice:":1"|upper }}</div>
+                                <div>
+                                    <div style="font-weight:600;font-size:0.85rem;">{{ emp.name }}</div>
+                                    <div style="font-size:0.75rem;color:#94a3b8;">{{ emp.employee_id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="font-size:0.85rem;">{{ emp.position|default:"—" }}</td>
+                        <td style="font-size:0.85rem;">{{ emp.department|default:"—" }}</td>
+                        <td><span class="badge-status badge-{{ emp.status }}">{{ emp.status|title }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4"><div class="empty-state"><i class="bi bi-people"></i><p>No employees yet</p><a href="/employees/add/" class="btn btn-sm btn-primary">Add Employee</a></div></td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Leave Requests -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="p-4 pb-0 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:6px;height:20px;background:#E60000;border-radius:3px;"></div>
+                    <span style="font-size:0.95rem;font-weight:700;color:#0f172a;">Leave Requests</span>
+                </div>
+                <a href="/leave/" class="btn btn-sm" style="background:#FFF9E6;color:#CC9900;border-radius:8px;font-size:0.78rem;font-weight:600;border:1px solid #FFCC00;">View All <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+            <div class="p-3">
+                {% for leave in recent_leaves %}
+                <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-2" style="background:#f8fafc;">
+                    <div class="emp-avatar" style="background:linear-gradient(135deg,#FFCC00,#E6B800);color:#1A1A1A;">{{ leave.employee.name|slice:":1"|upper }}</div>
+                    <div class="flex-grow-1">
+                        <div style="font-size:0.84rem;font-weight:600;color:#1e293b;">{{ leave.employee.name }}</div>
+                        <div style="font-size:0.76rem;color:#94a3b8;">{{ leave.leave_type }} · {{ leave.total_days }} day(s)</div>
+                    </div>
+                    <span class="badge-status badge-{{ leave.status }}">{{ leave.status|title }}</span>
+                </div>
+                {% empty %}
+                <div class="empty-state"><i class="bi bi-calendar-x"></i><p>No leave requests</p></div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
