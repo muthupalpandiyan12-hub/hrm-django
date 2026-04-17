@@ -17,6 +17,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'https://*.railway.app',
     'https://*.up.railway.app',
+    'https://web-production-2db75.up.railway.app',
 ]
 
 INSTALLED_APPS = [
