@@ -30,8 +30,8 @@
             {% for p in payslips %}
             <tr>
                 <td>
-                    <span style="font-weight:700;font-size:0.88rem;background:#FFF0F0;color:#CC0000;padding:4px 12px;border-radius:8px;border:1px solid #FFCCCC;">
-                        {% if p.month == 1 %}January{% elif p.month == 2 %}February{% elif p.month == 3 %}March{% elif p.month == 4 %}April{% elif p.month == 5 %}May{% elif p.month == 6 %}June{% elif p.month == 7 %}July{% elif p.month == 8 %}August{% elif p.month == 9 %}September{% elif p.month == 10 %}October{% elif p.month == 11 %}November{% else %}December{% endif %}
+                    <span style="font-weight:700;font-size:0.88rem;background:#FFF0F0;color:#CC0000;padding:4px 12px;border-radius:8px;border:1px solid #FFCCCC;white-space:nowrap;display:inline-block;">
+                        {% if p.month == 1 %}Jan{% elif p.month == 2 %}Feb{% elif p.month == 3 %}Mar{% elif p.month == 4 %}Apr{% elif p.month == 5 %}May{% elif p.month == 6 %}Jun{% elif p.month == 7 %}Jul{% elif p.month == 8 %}Aug{% elif p.month == 9 %}Sep{% elif p.month == 10 %}Oct{% elif p.month == 11 %}Nov{% else %}Dec{% endif %}
                         {{ p.year }}
                     </span>
                 </td>

@@ -106,18 +106,18 @@
                 </td>
 
                 <!-- Status -->
-                <td>
+                <td style="white-space:nowrap;">
                     {% if item.is_active %}
-                    <span style="display:inline-flex;align-items:center;gap:6px;background:#FFF0F0;color:#CC0000;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">
-                        <span style="width:7px;height:7px;background:#E60000;border-radius:50%;animation:pulse 1.5s infinite;"></span>
+                    <span style="display:inline-flex;align-items:center;gap:6px;background:#FFF0F0;color:#CC0000;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap;">
+                        <span style="width:7px;height:7px;background:#E60000;border-radius:50%;animation:pulse 1.5s infinite;flex-shrink:0;"></span>
                         Active
                     </span>
                     {% elif item.is_complete %}
-                    <span style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">✓ Complete</span>
+                    <span style="background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap;">✓ Complete</span>
                     {% elif item.sessions %}
-                    <span style="background:#fef9c3;color:#854d0e;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">Short</span>
+                    <span style="background:#fef9c3;color:#854d0e;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap;">Short</span>
                     {% else %}
-                    <span style="background:#f1f5f9;color:#94a3b8;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;">Absent</span>
+                    <span style="background:#f1f5f9;color:#94a3b8;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;white-space:nowrap;">Absent</span>
                     {% endif %}
                 </td>
 
@@ -166,10 +166,10 @@
                 </td>
 
                 <!-- Session count -->
-                <td>
+                <td style="white-space:nowrap;">
                     {% if item.sessions %}
-                    <span style="background:#FFF0F0;color:#E60000;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;">
-                        {{ item.sessions|length }} session{{ item.sessions|length|pluralize }}
+                    <span style="background:#FFF0F0;color:#E60000;padding:3px 10px;border-radius:20px;font-size:0.78rem;font-weight:700;white-space:nowrap;">
+                        {{ item.sessions|length }}s
                     </span>
                     {% else %}<span style="color:#e2e8f0;">—</span>{% endif %}
                 </td>

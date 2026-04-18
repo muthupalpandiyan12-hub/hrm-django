@@ -225,22 +225,22 @@
                     <tbody>
                     {% for day in history %}
                     <tr>
-                        <td style="font-size:0.83rem;font-weight:600;color:#0f172a;">{{ day.date|date:"D, d M" }}</td>
-                        <td style="font-size:0.83rem;color:#10b981;font-weight:600;">
+                        <td style="font-size:0.83rem;font-weight:600;color:#0f172a;white-space:nowrap;">{{ day.date|date:"D, d M" }}</td>
+                        <td style="font-size:0.83rem;color:#10b981;font-weight:600;white-space:nowrap;">
                             {% if day.first_punch_in %}{{ day.first_punch_in|time:"h:i A" }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}
                         </td>
-                        <td style="font-size:0.83rem;color:#ef4444;font-weight:600;">
+                        <td style="font-size:0.83rem;color:#ef4444;font-weight:600;white-space:nowrap;">
                             {% if day.last_punch_out %}{{ day.last_punch_out|time:"h:i A" }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}
                         </td>
-                        <td style="font-size:0.83rem;font-weight:700;color:#0f172a;">
+                        <td style="font-size:0.83rem;font-weight:700;color:#0f172a;white-space:nowrap;">
                             {% if day.sessions %}{{ day.total_display }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}
                         </td>
-                        <td style="font-size:0.83rem;color:#d97706;font-weight:600;">{{ day.break_count }}</td>
-                        <td>
+                        <td style="font-size:0.83rem;color:#d97706;font-weight:600;text-align:center;">{{ day.break_count }}</td>
+                        <td style="white-space:nowrap;">
                             {% if not day.sessions %}
                             <span style="background:#f1f5f9;color:#64748b;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Absent</span>
                             {% elif day.is_complete %}
-                            <span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">✓ Complete</span>
+                            <span style="background:#dcfce7;color:#166534;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">✓ Done</span>
                             {% else %}
                             <span style="background:#fef9c3;color:#854d0e;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:600;">Short</span>
                             {% endif %}
