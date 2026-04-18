@@ -321,12 +321,78 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--vi-red); }
+
+        /* ═══════════ MOBILE RESPONSIVE ═══════════ */
+
+        /* Hamburger button — hidden on desktop */
+        .sidebar-toggle {
+            display: none;
+            width: 38px; height: 38px;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 9px;
+            background: none;
+            align-items: center; justify-content: center;
+            font-size: 1.1rem; color: #888;
+            cursor: pointer; flex-shrink: 0;
+        }
+
+        /* Sidebar overlay backdrop */
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        @media (max-width: 768px) {
+            /* Show hamburger */
+            .sidebar-toggle { display: flex; }
+
+            /* Sidebar slides off-screen by default */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 300;
+            }
+            .sidebar.open { transform: translateX(0); }
+
+            /* Main content takes full width */
+            .main-content { margin-left: 0 !important; }
+
+            /* Reduce topbar padding */
+            .topbar { padding: 0 14px; }
+
+            /* Hide role badge on very small screens */
+            .role-badge { display: none; }
+
+            /* Reduce page padding */
+            .page-content { padding: 14px 12px; }
+
+            /* Stat cards: 2 per row */
+            .stat-card .stat-number { font-size: 1.5rem; }
+            .stat-card .stat-icon { font-size: 1.8rem; }
+
+            /* Tables: horizontal scroll */
+            .table-responsive-mobile { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+            /* Topbar username — hide on small screens */
+            .topbar-uname { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .page-content { padding: 10px 8px; }
+            .topbar { padding: 0 10px; gap: 6px; }
+        }
     </style>
 </head>
 <body>
 
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
 <!-- SIDEBAR -->
-<div class="sidebar">
+<div class="sidebar" id="portalSidebar">
     <div class="sidebar-brand">
         <div class="brand-icon"><i class="bi bi-person-fill"></i></div>
         <div>
@@ -397,7 +463,13 @@
 <!-- MAIN CONTENT -->
 <div class="main-content">
     <div class="topbar">
-        <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Hamburger (mobile only) -->
+            <button class="sidebar-toggle" onclick="openSidebar()" title="Menu">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        </div>
         <div class="d-flex align-items-center gap-2">
             <!-- Dark Mode -->
             <button onclick="toggleDarkPortal()" id="darkBtnPortal" title="Toggle Dark Mode"
@@ -414,7 +486,7 @@
                     <div style="width:28px;height:28px;background:linear-gradient(135deg,#E60000,#CC0000);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.74rem;flex-shrink:0;">
                         {{ request.user.username|slice:":1"|upper }}
                     </div>
-                    <span style="font-size:0.83rem;font-weight:600;color:#1A1A1A;">{{ request.user.username }}</span>
+                    <span class="topbar-uname" style="font-size:0.83rem;font-weight:600;color:#1A1A1A;">{{ request.user.username }}</span>
                     <i class="bi bi-chevron-down" style="font-size:0.65rem;color:#94a3b8;"></i>
                 </div>
                 <ul class="dropdown-menu dropdown-menu-end" style="border:none;border-radius:14px;padding:8px;min-width:210px;margin-top:8px;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
@@ -557,6 +629,24 @@ function applyDarkMode(isDark) {
     patchInlineColors(isDark);
     patchTableRows(isDark);
 }
+
+/* ── Mobile sidebar ── */
+function openSidebar() {
+    document.getElementById('portalSidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+    document.getElementById('portalSidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+// Close sidebar when a nav link is clicked (mobile)
+document.querySelectorAll('.nav-link-p').forEach(function(link) {
+    link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) closeSidebar();
+    });
+});
 
 function toggleDarkPortal() {
     document.body.classList.toggle('dark-mode');

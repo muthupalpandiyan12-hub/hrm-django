@@ -65,6 +65,10 @@
                 </a>
             </div>
 
+            <!-- Scrollable calendar wrapper for mobile -->
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+            <div style="min-width:280px;">
+
             <!-- Day-of-week headers -->
             <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px;">
                 <div style="text-align:center;font-size:0.7rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;padding:4px 0;">Mon</div>
@@ -202,6 +206,9 @@
                 </div>
             </div>
 
+            </div><!-- /min-width -->
+            </div><!-- /scroll wrapper -->
+
         </div><!-- /card -->
     </div>
 
@@ -213,7 +220,7 @@
             <div style="font-weight:700;font-size:0.88rem;color:#0f172a;margin-bottom:12px;">
                 <i class="bi bi-funnel me-2" style="color:#E60000;"></i>Jump to Month
             </div>
-            <form method="get" class="d-flex gap-2">
+            <form method="get" class="d-flex gap-2 flex-wrap">
                 <select name="month" class="form-select form-select-sm">
                     {% for m in months %}
                     <option value="{{ m }}" {% if m == month %}selected{% endif %}>
@@ -301,7 +308,7 @@
 
 <!-- ═══════════════ DAY DETAIL MODAL ═══════════════ -->
 <div class="modal fade" id="dayDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:min(400px, calc(100% - 20px));">
         <div class="modal-content" style="border-radius:18px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.15);overflow:hidden;">
 
             <!-- Modal Header -->

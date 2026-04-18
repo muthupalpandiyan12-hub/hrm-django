@@ -378,12 +378,63 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--vi-red); }
+
+        /* ═══════════ MOBILE RESPONSIVE ═══════════ */
+        .sidebar-toggle {
+            display: none;
+            width: 38px; height: 38px;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 9px;
+            background: none;
+            align-items: center; justify-content: center;
+            font-size: 1.1rem; color: #888;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 199;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        @media (max-width: 768px) {
+            .sidebar-toggle { display: flex; }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 300;
+            }
+            .sidebar.open { transform: translateX(0); }
+
+            .main-content { margin-left: 0 !important; }
+
+            .topbar { padding: 0 14px; }
+            .topbar-username { display: none; }
+
+            .page-content { padding: 14px 12px; }
+
+            .stat-card .stat-number { font-size: 1.6rem; }
+            .stat-card .stat-icon-wrap { font-size: 2rem; }
+
+            /* Hide non-essential topbar items */
+            .topbar-right .topbar-badge:not(#darkBtn) { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .page-content { padding: 10px 8px; }
+            .topbar { padding: 0 10px; }
+        }
     </style>
 </head>
 <body>
 
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="adminSidebarOverlay" onclick="closeAdminSidebar()"></div>
+
 <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
-<div class="sidebar">
+<div class="sidebar" id="adminSidebar">
     <div class="sidebar-brand">
         <div class="brand-icon"><i class="bi bi-people-fill"></i></div>
         <div>
@@ -489,7 +540,12 @@
 <div class="main-content">
     <!-- Topbar -->
     <div class="topbar">
-        <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="sidebar-toggle" onclick="openAdminSidebar()" title="Menu">
+                <i class="bi bi-list"></i>
+            </button>
+            <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        </div>
         <div class="topbar-right">
             <!-- Dark Mode Toggle -->
             <button onclick="toggleDark()" id="darkBtn" class="topbar-badge" title="Toggle Dark Mode" style="background:none;cursor:pointer;">
@@ -709,6 +765,23 @@ function applyDarkMode(isDark) {
     patchInlineColors(isDark);
     patchTableRows(isDark);
 }
+
+/* ── Mobile sidebar ── */
+function openAdminSidebar() {
+    document.getElementById('adminSidebar').classList.add('open');
+    document.getElementById('adminSidebarOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeAdminSidebar() {
+    document.getElementById('adminSidebar').classList.remove('open');
+    document.getElementById('adminSidebarOverlay').classList.remove('active');
+    document.body.style.overflow = '';
+}
+document.querySelectorAll('.nav-link-custom').forEach(function(link) {
+    link.addEventListener('click', function() {
+        if (window.innerWidth <= 768) closeAdminSidebar();
+    });
+});
 
 function toggleDark() {
     document.body.classList.toggle('dark-mode');
