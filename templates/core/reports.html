@@ -1,15 +1,14 @@
 {% extends 'base.html' %}
 {% block title %}Reports & Analytics{% endblock %}
+{% block page_title %}<i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Reports & Analytics{% endblock %}
+{% block nav_reports %}active{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
 
   <!-- Page Header -->
   <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-    <div>
-      <h4 class="fw-bold mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Reports & Analytics</h4>
-      <small class="text-muted">Data for year {{ current_year }}</small>
-    </div>
+    <small class="text-muted">Overview for year {{ current_year }}</small>
     <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2 rounded-pill">
       <i class="bi bi-calendar3 me-1"></i>{{ current_year }}
     </span>
