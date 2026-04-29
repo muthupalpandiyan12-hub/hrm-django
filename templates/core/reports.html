@@ -127,8 +127,12 @@
                 </tr>
               </thead>
               <tbody>
-                {% for i in dept_counts %}
-                  {# We loop using a workaround with forloop.counter0 #}
+                {% for dept_name, headcount, total_sal in dept_counts %}
+                <tr>
+                  <td>{{ dept_name }}</td>
+                  <td class="text-end">{{ headcount }}</td>
+                  <td class="text-end">₹{{ total_sal|floatformat:0 }}</td>
+                </tr>
                 {% endfor %}
               </tbody>
             </table>

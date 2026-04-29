@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Count, Sum, Avg
+from collections import defaultdict
 import datetime
 import json
 from .models import Holiday, Announcement
@@ -93,53 +93,50 @@ def reports(request):
     current_year = today.year
 
     # ── 1. Monthly Attendance Report (current year) ──────────────────────────
+    # Fetch all records then count in Python (avoids Django ORM date__month grouping bug)
     month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-    present_counts = [0] * 12
-    absent_counts  = [0] * 12
-    late_counts    = [0] * 12
-    half_day_counts= [0] * 12
+    present_counts  = [0] * 12
+    absent_counts   = [0] * 12
+    late_counts     = [0] * 12
+    half_day_counts = [0] * 12
 
-    attendance_qs = (
-        Attendance.objects
-        .filter(date__year=current_year)
-        .values('date__month', 'status')
-        .annotate(total=Count('id'))
-    )
-    for row in attendance_qs:
-        m = row['date__month'] - 1   # 0-indexed
-        s = row['status']
-        if s == 'present':
-            present_counts[m] = row['total']
-        elif s == 'absent':
-            absent_counts[m] = row['total']
-        elif s == 'late':
-            late_counts[m] = row['total']
-        elif s == 'half_day':
-            half_day_counts[m] = row['total']
+    for rec in Attendance.objects.filter(date__year=current_year).only('date', 'status'):
+        m = rec.date.month - 1  # 0-indexed
+        if rec.status == 'present':
+            present_counts[m] += 1
+        elif rec.status == 'absent':
+            absent_counts[m] += 1
+        elif rec.status == 'late':
+            late_counts[m] += 1
+        elif rec.status == 'half_day':
+            half_day_counts[m] += 1
 
     # ── 2. Department-wise Salary Report ─────────────────────────────────────
-    dept_salary_qs = (
-        Employee.objects
-        .filter(status='active', department__isnull=False)
-        .values('department__name')
-        .annotate(total_salary=Sum('salary'), headcount=Count('id'))
-        .order_by('-total_salary')
-    )
-    dept_labels   = [r['department__name'] for r in dept_salary_qs]
-    dept_salaries = [float(r['total_salary']) for r in dept_salary_qs]
-    dept_counts   = [r['headcount'] for r in dept_salary_qs]
+    # Fetch employees then group in Python to avoid ORM annotation issues
+    dept_salary_map = defaultdict(lambda: {'total': 0, 'count': 0})
+    for emp in Employee.objects.filter(status='active', department__isnull=False).select_related('department'):
+        name = emp.department.name
+        dept_salary_map[name]['total'] += float(emp.salary)
+        dept_salary_map[name]['count'] += 1
+
+    sorted_depts = sorted(dept_salary_map.items(), key=lambda x: x[1]['total'], reverse=True)
+    dept_labels   = [d[0] for d in sorted_depts]
+    dept_salaries = [d[1]['total'] for d in sorted_depts]
+    dept_counts   = [(d[0], d[1]['count'], d[1]['total']) for d in sorted_depts]
 
     # ── 3. Employee Performance Chart (avg rating per employee, top 10) ──────
-    perf_qs = (
-        PerformanceReview.objects
-        .values('employee__name')
-        .annotate(avg_rating=Avg('rating'))
-        .order_by('-avg_rating')[:10]
-    )
-    perf_labels  = [r['employee__name'] for r in perf_qs]
-    perf_ratings = [round(float(r['avg_rating']), 2) for r in perf_qs]
+    perf_map = defaultdict(list)
+    for pr in PerformanceReview.objects.select_related('employee').only('employee__name', 'rating'):
+        perf_map[pr.employee.name].append(pr.rating)
+
+    perf_data = sorted(
+        [(name, round(sum(ratings)/len(ratings), 2)) for name, ratings in perf_map.items()],
+        key=lambda x: x[1], reverse=True
+    )[:10]
+    perf_labels  = [p[0] for p in perf_data]
+    perf_ratings = [p[1] for p in perf_data]
 
     # ── Summary numbers ───────────────────────────────────────────────────────
     total_employees   = Employee.objects.filter(status='active').count()
@@ -147,8 +144,8 @@ def reports(request):
     this_month_present = Attendance.objects.filter(
         date__year=today.year, date__month=today.month, status='present'
     ).count()
-    avg_salary = Employee.objects.filter(status='active').aggregate(
-        avg=Avg('salary'))['avg'] or 0
+    all_salaries = list(Employee.objects.filter(status='active').values_list('salary', flat=True))
+    avg_salary = round(sum(float(s) for s in all_salaries) / len(all_salaries), 2) if all_salaries else 0
 
     context = {
         'current_year': current_year,
