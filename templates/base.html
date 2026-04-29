@@ -544,9 +544,12 @@
                 <div class="user-role">Administrator</div>
             </div>
         </div>
-        <a href="/logout/" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#FF6666;text-decoration:none;font-size:0.86rem;font-weight:600;border:1px solid rgba(230,0,0,0.2);background:rgba(230,0,0,0.08);transition:all 0.15s;">
-            <i class="bi bi-box-arrow-right"></i> Sign Out
-        </a>
+        <form method="post" action="/logout/" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:#FF6666;text-decoration:none;font-size:0.86rem;font-weight:600;border:1px solid rgba(230,0,0,0.2);background:rgba(230,0,0,0.08);transition:all 0.15s;width:100%;cursor:pointer;">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
+        </form>
     </div>
 </div>
 
@@ -643,12 +646,15 @@
                     </li>
                     <li><hr style="margin:6px 0;border-color:#f1f5f9;"></li>
                     <li>
-                        <a class="dropdown-item rounded-3 d-flex align-items-center gap-2" href="/logout/" style="font-size:0.84rem;padding:9px 12px;color:#E60000;font-weight:600;">
-                            <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                <i class="bi bi-box-arrow-right" style="color:#E60000;font-size:0.8rem;"></i>
-                            </div>
-                            Sign Out
-                        </a>
+                        <form method="post" action="/logout/" style="margin:0;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item rounded-3 d-flex align-items-center gap-2" style="font-size:0.84rem;padding:9px 12px;color:#E60000;font-weight:600;background:none;border:none;width:100%;cursor:pointer;">
+                                <div style="width:28px;height:28px;background:#FFF0F0;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                    <i class="bi bi-box-arrow-right" style="color:#E60000;font-size:0.8rem;"></i>
+                                </div>
+                                Sign Out
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div>
