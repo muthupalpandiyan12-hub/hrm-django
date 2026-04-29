@@ -17,7 +17,7 @@
   <!-- Summary Cards -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#E60000,#b30000);">
         <div class="card-body text-white">
           <div class="d-flex justify-content-between align-items-start">
             <div>
@@ -32,7 +32,7 @@
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#1a1a1a,#333);">
         <div class="card-body text-white">
           <div class="d-flex justify-content-between align-items-start">
             <div>
@@ -47,7 +47,7 @@
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#10b981,#059669);">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#CC9900,#a37a00);">
         <div class="card-body text-white">
           <div class="d-flex justify-content-between align-items-start">
             <div>
@@ -62,7 +62,7 @@
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#E60000,#990000);">
         <div class="card-body text-white">
           <div class="d-flex justify-content-between align-items-start">
             <div>
@@ -157,11 +157,11 @@
           </div>
           <!-- Rating scale legend -->
           <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
-            <span class="badge bg-danger">1 — Poor</span>
-            <span class="badge bg-warning text-dark">2 — Below Avg</span>
-            <span class="badge bg-secondary">3 — Average</span>
-            <span class="badge bg-primary">4 — Good</span>
-            <span class="badge bg-success">5 — Excellent</span>
+            <span class="badge" style="background:#1a1a1a;">1 — Poor</span>
+            <span class="badge" style="background:#555;">2 — Below Avg</span>
+            <span class="badge" style="background:#888;color:#fff;">3 — Average</span>
+            <span class="badge" style="background:#CC9900;">4 — Good</span>
+            <span class="badge" style="background:#E60000;">5 — Excellent</span>
           </div>
         </div>
       </div>
@@ -198,10 +198,10 @@ new Chart(document.getElementById('attendanceChart'), {
   data: {
     labels: monthNames,
     datasets: [
-      { label: 'Present',  data: presentData,  backgroundColor: '#10b981', borderRadius: 4 },
-      { label: 'Absent',   data: absentData,   backgroundColor: '#ef4444', borderRadius: 4 },
-      { label: 'Late',     data: lateData,     backgroundColor: '#f59e0b', borderRadius: 4 },
-      { label: 'Half Day', data: halfDayData,  backgroundColor: '#8b5cf6', borderRadius: 4 },
+      { label: 'Present',  data: presentData,  backgroundColor: '#E60000', borderRadius: 4 },
+      { label: 'Absent',   data: absentData,   backgroundColor: '#1a1a1a', borderRadius: 4 },
+      { label: 'Late',     data: lateData,     backgroundColor: '#CC9900', borderRadius: 4 },
+      { label: 'Half Day', data: halfDayData,  backgroundColor: '#888888', borderRadius: 4 },
     ]
   },
   options: {
@@ -221,8 +221,8 @@ new Chart(document.getElementById('attendanceChart'), {
 
 // ── 2. Department-wise Salary Horizontal Bar ──────────────────────────────────
 const deptColors = [
-  '#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444',
-  '#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'
+  '#E60000','#1a1a1a','#CC9900','#b30000','#333333',
+  '#a37a00','#ff3333','#555555','#ffcc00','#800000'
 ];
 new Chart(document.getElementById('deptSalaryChart'), {
   type: 'bar',
@@ -257,7 +257,7 @@ new Chart(document.getElementById('deptSalaryChart'), {
 
 // ── 3. Performance Radar / Horizontal Bar ────────────────────────────────────
 const perfBg = perfRatings.map(r =>
-  r >= 4.5 ? '#10b981' : r >= 3.5 ? '#4f46e5' : r >= 2.5 ? '#f59e0b' : '#ef4444'
+  r >= 4.5 ? '#E60000' : r >= 3.5 ? '#CC9900' : r >= 2.5 ? '#555555' : '#1a1a1a'
 );
 new Chart(document.getElementById('perfChart'), {
   type: 'bar',
