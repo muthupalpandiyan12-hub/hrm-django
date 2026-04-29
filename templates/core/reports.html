@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h4 class="fw-bold mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Reports & Analytics</h4>
+      <small class="text-muted">Data for year {{ current_year }}</small>
+    </div>
+    <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2 rounded-pill">
+      <i class="bi bi-calendar3 me-1"></i>{{ current_year }}
+    </span>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#4f46e5,#7c3aed);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1 small opacity-75">Active Employees</p>
+              <h3 class="fw-bold mb-0">{{ total_employees }}</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-2">
+              <i class="bi bi-people-fill fs-5"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1 small opacity-75">Departments</p>
+              <h3 class="fw-bold mb-0">{{ total_departments }}</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-2">
+              <i class="bi bi-diagram-3-fill fs-5"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#10b981,#059669);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1 small opacity-75">Present This Month</p>
+              <h3 class="fw-bold mb-0">{{ this_month_present }}</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-2">
+              <i class="bi bi-calendar-check-fill fs-5"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm h-100" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+        <div class="card-body text-white">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <p class="mb-1 small opacity-75">Avg. Salary</p>
+              <h3 class="fw-bold mb-0">₹{{ avg_salary|floatformat:0 }}</h3>
+            </div>
+            <div class="bg-white bg-opacity-25 rounded-circle p-2">
+              <i class="bi bi-cash-stack fs-5"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 1: Monthly Attendance Chart -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-calendar2-range text-primary me-2"></i>
+            Monthly Attendance Report — {{ current_year }}
+          </h6>
+          <small class="text-muted">Present / Absent / Late / Half-Day per month</small>
+        </div>
+        <div class="card-body">
+          <div style="position:relative;height:320px;">
+            <canvas id="attendanceChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Dept Salary + Performance -->
+  <div class="row g-3">
+    <!-- Department-wise Salary -->
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-building text-success me-2"></i>
+            Department-wise Salary Report
+          </h6>
+          <small class="text-muted">Total salary payout per department (active employees)</small>
+        </div>
+        <div class="card-body">
+          <div style="position:relative;height:300px;">
+            <canvas id="deptSalaryChart"></canvas>
+          </div>
+          <!-- Table below chart -->
+          {% if dept_counts %}
+          <div class="table-responsive mt-3">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Department</th>
+                  <th class="text-end">Employees</th>
+                  <th class="text-end">Total Salary</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for i in dept_counts %}
+                  {# We loop using a workaround with forloop.counter0 #}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Employee Performance -->
+    <div class="col-12 col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-transparent border-0 pt-3 pb-0">
+          <h6 class="fw-bold mb-0">
+            <i class="bi bi-star-fill text-warning me-2"></i>
+            Employee Performance Chart
+          </h6>
+          <small class="text-muted">Average rating per employee (Top 10)</small>
+        </div>
+        <div class="card-body">
+          <div style="position:relative;height:300px;">
+            <canvas id="perfChart"></canvas>
+          </div>
+          <!-- Rating scale legend -->
+          <div class="d-flex flex-wrap gap-2 mt-3 justify-content-center">
+            <span class="badge bg-danger">1 — Poor</span>
+            <span class="badge bg-warning text-dark">2 — Below Avg</span>
+            <span class="badge bg-secondary">3 — Average</span>
+            <span class="badge bg-primary">4 — Good</span>
+            <span class="badge bg-success">5 — Excellent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+// ── Data from Django ──────────────────────────────────────────────────────────
+const monthNames   = {{ month_names|safe }};
+const presentData  = {{ present_counts|safe }};
+const absentData   = {{ absent_counts|safe }};
+const lateData     = {{ late_counts|safe }};
+const halfDayData  = {{ half_day_counts|safe }};
+
+const deptLabels   = {{ dept_labels|safe }};
+const deptSalaries = {{ dept_salaries|safe }};
+
+const perfLabels   = {{ perf_labels|safe }};
+const perfRatings  = {{ perf_ratings|safe }};
+
+// ── Detect dark mode ─────────────────────────────────────────────────────────
+const isDark = document.body.classList.contains('dark-mode');
+const gridColor  = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const labelColor = isDark ? '#aaa' : '#555';
+Chart.defaults.color = labelColor;
+
+// ── 1. Monthly Attendance Bar Chart ──────────────────────────────────────────
+new Chart(document.getElementById('attendanceChart'), {
+  type: 'bar',
+  data: {
+    labels: monthNames,
+    datasets: [
+      { label: 'Present',  data: presentData,  backgroundColor: '#10b981', borderRadius: 4 },
+      { label: 'Absent',   data: absentData,   backgroundColor: '#ef4444', borderRadius: 4 },
+      { label: 'Late',     data: lateData,     backgroundColor: '#f59e0b', borderRadius: 4 },
+      { label: 'Half Day', data: halfDayData,  backgroundColor: '#8b5cf6', borderRadius: 4 },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, stacked: false },
+      y: { grid: { color: gridColor }, beginAtZero: true,
+           ticks: { stepSize: 1 } }
+    }
+  }
+});
+
+// ── 2. Department-wise Salary Horizontal Bar ──────────────────────────────────
+const deptColors = [
+  '#4f46e5','#0ea5e9','#10b981','#f59e0b','#ef4444',
+  '#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'
+];
+new Chart(document.getElementById('deptSalaryChart'), {
+  type: 'bar',
+  data: {
+    labels: deptLabels.length ? deptLabels : ['No Data'],
+    datasets: [{
+      label: 'Total Salary (₹)',
+      data: deptSalaries.length ? deptSalaries : [0],
+      backgroundColor: deptColors.slice(0, Math.max(deptLabels.length, 1)),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' ₹' + ctx.parsed.x.toLocaleString('en-IN')
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, beginAtZero: true,
+           ticks: { callback: v => '₹' + (v/1000).toFixed(0) + 'K' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ── 3. Performance Radar / Horizontal Bar ────────────────────────────────────
+const perfBg = perfRatings.map(r =>
+  r >= 4.5 ? '#10b981' : r >= 3.5 ? '#4f46e5' : r >= 2.5 ? '#f59e0b' : '#ef4444'
+);
+new Chart(document.getElementById('perfChart'), {
+  type: 'bar',
+  data: {
+    labels: perfLabels.length ? perfLabels : ['No Data'],
+    datasets: [{
+      label: 'Avg Rating',
+      data: perfRatings.length ? perfRatings : [0],
+      backgroundColor: perfBg,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ' Rating: ' + ctx.parsed.x + ' / 5'
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: gridColor }, min: 0, max: 5,
+           ticks: { stepSize: 1 } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+
+// ── Re-draw charts if dark mode toggled ──────────────────────────────────────
+document.addEventListener('darkModeToggled', () => location.reload());
+</script>
+{% endblock %}

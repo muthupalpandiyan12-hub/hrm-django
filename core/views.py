@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db.models import Count, Sum, Avg
 import datetime
+import json
 from .models import Holiday, Announcement
 from userroles.helpers import admin_required
 
@@ -79,3 +81,91 @@ def announcement_delete(request, pk):
         messages.success(request, 'Announcement deleted.')
         return redirect('announcement_list')
     return redirect('announcement_list')
+
+
+@admin_required
+def reports(request):
+    from attendance.models import Attendance
+    from employees.models import Employee, Department
+    from performance.models import PerformanceReview
+
+    today = datetime.date.today()
+    current_year = today.year
+
+    # ── 1. Monthly Attendance Report (current year) ──────────────────────────
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    present_counts = [0] * 12
+    absent_counts  = [0] * 12
+    late_counts    = [0] * 12
+    half_day_counts= [0] * 12
+
+    attendance_qs = (
+        Attendance.objects
+        .filter(date__year=current_year)
+        .values('date__month', 'status')
+        .annotate(total=Count('id'))
+    )
+    for row in attendance_qs:
+        m = row['date__month'] - 1   # 0-indexed
+        s = row['status']
+        if s == 'present':
+            present_counts[m] = row['total']
+        elif s == 'absent':
+            absent_counts[m] = row['total']
+        elif s == 'late':
+            late_counts[m] = row['total']
+        elif s == 'half_day':
+            half_day_counts[m] = row['total']
+
+    # ── 2. Department-wise Salary Report ─────────────────────────────────────
+    dept_salary_qs = (
+        Employee.objects
+        .filter(status='active', department__isnull=False)
+        .values('department__name')
+        .annotate(total_salary=Sum('salary'), headcount=Count('id'))
+        .order_by('-total_salary')
+    )
+    dept_labels   = [r['department__name'] for r in dept_salary_qs]
+    dept_salaries = [float(r['total_salary']) for r in dept_salary_qs]
+    dept_counts   = [r['headcount'] for r in dept_salary_qs]
+
+    # ── 3. Employee Performance Chart (avg rating per employee, top 10) ──────
+    perf_qs = (
+        PerformanceReview.objects
+        .values('employee__name')
+        .annotate(avg_rating=Avg('rating'))
+        .order_by('-avg_rating')[:10]
+    )
+    perf_labels  = [r['employee__name'] for r in perf_qs]
+    perf_ratings = [round(float(r['avg_rating']), 2) for r in perf_qs]
+
+    # ── Summary numbers ───────────────────────────────────────────────────────
+    total_employees   = Employee.objects.filter(status='active').count()
+    total_departments = Department.objects.count()
+    this_month_present = Attendance.objects.filter(
+        date__year=today.year, date__month=today.month, status='present'
+    ).count()
+    avg_salary = Employee.objects.filter(status='active').aggregate(
+        avg=Avg('salary'))['avg'] or 0
+
+    context = {
+        'current_year': current_year,
+        'month_names':  json.dumps(month_names),
+        'present_counts':  json.dumps(present_counts),
+        'absent_counts':   json.dumps(absent_counts),
+        'late_counts':     json.dumps(late_counts),
+        'half_day_counts': json.dumps(half_day_counts),
+        'dept_labels':    json.dumps(dept_labels),
+        'dept_salaries':  json.dumps(dept_salaries),
+        'dept_counts':    dept_counts,
+        'perf_labels':    json.dumps(perf_labels),
+        'perf_ratings':   json.dumps(perf_ratings),
+        # summary cards
+        'total_employees':   total_employees,
+        'total_departments': total_departments,
+        'this_month_present': this_month_present,
+        'avg_salary': round(avg_salary, 2),
+    }
+    return render(request, 'core/reports.html', context)
