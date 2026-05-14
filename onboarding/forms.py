@@ -4,7 +4,73 @@ from .models import (
     OfferLetter, EmployeeDocument, OnboardingChecklist,
     DocumentRequirement, OnboardingInvitation
 )
+from employees.models import Employee, Department
 from django.conf import settings
+
+
+class EmployeeCreationForm(forms.ModelForm):
+    """
+    Custom form for admin to create employees and start onboarding
+    Bypasses Django's problematic admin change_form template
+    """
+    class Meta:
+        model = Employee
+        fields = ['employee_id', 'name', 'email', 'phone', 'position', 'department', 'salary', 'status']
+        widgets = {
+            'employee_id': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'E.g., EMP001',
+                'required': True
+            }),
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Full Name',
+                'required': True
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Email Address',
+                'required': True
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Phone Number'
+            }),
+            'position': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Job Position',
+                'required': True
+            }),
+            'department': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'salary': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'step': '0.01'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-control'
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['department'].queryset = Department.objects.all()
+        self.fields['department'].required = False
+        self.fields['status'].initial = 'active'
+
+    def clean_employee_id(self):
+        employee_id = self.cleaned_data.get('employee_id')
+        if Employee.objects.filter(employee_id=employee_id).exclude(pk=self.instance.pk if self.instance.pk else None).exists():
+            raise ValidationError("This Employee ID already exists")
+        return employee_id
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if Employee.objects.filter(email=email).exclude(pk=self.instance.pk if self.instance.pk else None).exists():
+            raise ValidationError("An employee with this email already exists")
+        return email
 
 
 class OfferLetterForm(forms.ModelForm):

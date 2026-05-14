@@ -16,7 +16,7 @@ from .models import (
 from .forms import (
     OfferLetterForm, DocumentUploadForm, OnboardingChecklistForm,
     AdminChecklistManagementForm, DocumentVerificationForm,
-    InvitationResendForm, SignatureForm
+    InvitationResendForm, SignatureForm, EmployeeCreationForm
 )
 from .utils.email import (
     send_invitation_email, send_offer_letter_email,
@@ -38,6 +38,32 @@ logger = logging.getLogger(__name__)
 
 
 # ==================== ADMIN VIEWS ====================
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def create_employee(request):
+    """
+    Custom employee creation view bypassing Django admin
+    """
+    if not request.user.is_staff:
+        messages.error(request, "You do not have permission to access this page")
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = EmployeeCreationForm(request.POST)
+        if form.is_valid():
+            employee = form.save()
+            messages.success(request, f"Employee {employee.name} created successfully!")
+            return redirect('send_invitation', employee_id=employee.id)
+        else:
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {errors[0]}")
+    else:
+        form = EmployeeCreationForm()
+
+    context = {'form': form}
+    return render(request, 'onboarding/admin/create_employee.html', context)
+
 
 @login_required
 @require_http_methods(["GET"])

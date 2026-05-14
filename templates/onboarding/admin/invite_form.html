@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Send Invitation - Onboarding{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope"></i> Send Onboarding Invitation
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Employee Information -->
+                    <div class="alert alert-info">
+                        <h5>Employee Details</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3">Name:</dt>
+                            <dd class="col-sm-9"><strong>{{ employee.name }}</strong></dd>
+
+                            <dt class="col-sm-3">Email:</dt>
+                            <dd class="col-sm-9"><strong>{{ employee.email }}</strong></dd>
+
+                            <dt class="col-sm-3">Phone:</dt>
+                            <dd class="col-sm-9">
+                                <strong>
+                                    {% if employee.phone_number %}
+                                        {{ employee.phone_number }}
+                                    {% else %}
+                                        <span class="text-muted">(Not provided)</span>
+                                    {% endif %}
+                                </strong>
+                            </dd>
+
+                            <dt class="col-sm-3">Position:</dt>
+                            <dd class="col-sm-9"><strong>{{ employee.position }}</strong></dd>
+
+                            <dt class="col-sm-3">Department:</dt>
+                            <dd class="col-sm-9">
+                                <strong>
+                                    {% if employee.department %}
+                                        {{ employee.department.name }}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </strong>
+                            </dd>
+                        </dl>
+                    </div>
+
+                    {% if existing_invitation %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Existing Invitation:</strong> Status: <span class="badge badge-warning">{{ existing_invitation.status }}</span>
+                        {% if existing_invitation.email_sent_at %}
+                        <br>Email sent on: {{ existing_invitation.email_sent_at|date:"d M Y, H:i" }}
+                        {% endif %}
+                        {% if existing_invitation.whatsapp_sent_at %}
+                        <br>WhatsApp sent on: {{ existing_invitation.whatsapp_sent_at|date:"d M Y, H:i" }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Invitation Form -->
+                    <form method="POST" id="invitationForm">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <h5>Invitation Method</h5>
+                            <p class="text-muted">Select how to send the invitation</p>
+
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input type="checkbox" class="custom-control-input" id="sendEmail"
+                                       name="send_email" checked>
+                                <label class="custom-control-label" for="sendEmail">
+                                    <i class="fas fa-envelope"></i> Send via Email
+                                    <small class="text-muted d-block">
+                                        Invitation link will be sent to: <strong>{{ employee.email }}</strong>
+                                    </small>
+                                </label>
+                            </div>
+
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input type="checkbox" class="custom-control-input" id="sendWhatsapp"
+                                       name="send_whatsapp"
+                                       {% if not employee.phone_number %}disabled{% endif %}>
+                                <label class="custom-control-label" for="sendWhatsapp">
+                                    <i class="fab fa-whatsapp"></i> Send via WhatsApp
+                                    {% if employee.phone_number %}
+                                    <small class="text-muted d-block">
+                                        Message will be sent to: <strong>{{ employee.phone_number }}</strong>
+                                    </small>
+                                    {% else %}
+                                    <small class="text-danger d-block">
+                                        <i class="fas fa-exclamation-triangle"></i> Phone number not available
+                                    </small>
+                                    {% endif %}
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Portal URL -->
+                        <div class="form-group">
+                            <label for="portalUrl"><i class="fas fa-link"></i> Portal URL</label>
+                            <input type="url" class="form-control" id="portalUrl" name="portal_url"
+                                   placeholder="e.g., http://your-domain.com/onboarding"
+                                   value="http://{% request.META.HTTP_HOST %}/onboarding">
+                            <small class="form-text text-muted">
+                                The URL where the employee will access the onboarding portal.
+                                The invitation token will be appended automatically.
+                            </small>
+                        </div>
+
+                        <hr>
+
+                        <!-- Form Actions -->
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-lg btn-block" id="submitBtn">
+                                <i class="fas fa-paper-plane"></i> Send Invitation
+                            </button>
+                        </div>
+
+                        <div class="text-center">
+                            <a href="{% url 'onboarding_dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="card mt-4 bg-light">
+                <div class="card-body">
+                    <h5><i class="fas fa-info-circle"></i> What happens next?</h5>
+                    <ol class="mb-0">
+                        <li>Employee receives invitation via selected method(s)</li>
+                        <li>Employee clicks the link and accepts the invitation</li>
+                        <li>Employee uploads required documents</li>
+                        <li>Employee reviews and signs the offer letter</li>
+                        <li>Employee completes day-1 welcome checklist</li>
+                        <li>Onboarding is marked complete</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('invitationForm').addEventListener('submit', function(e) {
+        const sendEmail = document.getElementById('sendEmail').checked;
+        const sendWhatsapp = document.getElementById('sendWhatsapp').checked;
+
+        if (!sendEmail && !sendWhatsapp) {
+            e.preventDefault();
+            alert('Please select at least one contact method (Email or WhatsApp)');
+            return false;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    });
+</script>
+
+<style>
+    .custom-control-label {
+        cursor: pointer;
+        padding-top: 0.25rem;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}

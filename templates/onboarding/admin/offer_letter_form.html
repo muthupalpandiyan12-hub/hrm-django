@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Offer Letter - Onboarding{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Create Offer Letter
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Employee Information -->
+                    <div class="alert alert-info">
+                        <h5>Employee Details</h5>
+                        <dl class="row mb-0">
+                            <dt class="col-sm-3">Name:</dt>
+                            <dd class="col-sm-9"><strong>{{ employee.name }}</strong></dd>
+
+                            <dt class="col-sm-3">Email:</dt>
+                            <dd class="col-sm-9"><strong>{{ employee.email }}</strong></dd>
+
+                            <dt class="col-sm-3">Position:</dt>
+                            <dd class="col-sm-9"><strong>{{ employee.position }}</strong></dd>
+
+                            {% if offer_letter %}
+                            <dt class="col-sm-3">Status:</dt>
+                            <dd class="col-sm-9">
+                                <span class="badge badge-{% if offer_letter.status == 'sent' %}info{% elif offer_letter.status == 'signed' %}success{% else %}warning{% endif %}">
+                                    {{ offer_letter.status|upper }}
+                                </span>
+                            </dd>
+                            {% endif %}
+                        </dl>
+                    </div>
+
+                    <!-- Offer Letter Form -->
+                    <form method="POST" id="offerForm">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.title.id_for_label }}">
+                                        <i class="fas fa-heading"></i> {{ form.title.label }}
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.title.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.start_date.id_for_label }}">
+                                        <i class="fas fa-calendar"></i> {{ form.start_date.label }}
+                                    </label>
+                                    {{ form.start_date }}
+                                    {% if form.start_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.start_date.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.salary_amount.id_for_label }}">
+                                        <i class="fas fa-rupee-sign"></i> {{ form.salary_amount.label }}
+                                    </label>
+                                    {{ form.salary_amount }}
+                                    {% if form.salary_amount.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.salary_amount.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.department.id_for_label }}">
+                                        <i class="fas fa-briefcase"></i> {{ form.department.label }}
+                                    </label>
+                                    {{ form.department }}
+                                    {% if form.department.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.department.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.offer_content.id_for_label }}">
+                                <i class="fas fa-align-left"></i> {{ form.offer_content.label }}
+                            </label>
+                            {{ form.offer_content }}
+                            {% if form.offer_content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.offer_content.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <small class="form-text text-muted">
+                                You can use HTML formatting for the offer letter content (bold, italic, lists, etc.)
+                            </small>
+                        </div>
+
+                        <hr>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="{{ form.send_immediately.id_for_label }}"
+                                       name="send_immediately">
+                                <label class="custom-control-label" for="{{ form.send_immediately.id_for_label }}">
+                                    <i class="fas fa-paper-plane"></i> {{ form.send_immediately.label }}
+                                </label>
+                                <small class="form-text text-muted d-block mt-2">
+                                    {{ form.send_immediately.help_text }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Form Actions -->
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success btn-lg mr-2" id="submitBtn">
+                                <i class="fas fa-save"></i> Save Offer Letter
+                            </button>
+                            <a href="{% url 'onboarding_dashboard' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Template Suggestions -->
+                    <div class="card mt-4 bg-light">
+                        <div class="card-body">
+                            <h5><i class="fas fa-lightbulb"></i> Sample Offer Letter Content</h5>
+                            <p>Here's a template you can use:</p>
+                            <pre class="bg-white p-3 rounded"><code>Dear {{ employee.name }},
+
+We are pleased to offer you the position of [POSITION] at our esteemed organization.
+
+**Position Details:**
+- Position: [POSITION]
+- Department: [DEPARTMENT]
+- Start Date: [START_DATE]
+- Annual Salary: [SALARY]
+
+**Key Terms:**
+- Employment Type: Full-Time
+- Reporting To: [MANAGER]
+- Location: [OFFICE_LOCATION]
+
+This offer is contingent upon:
+1. Successful background verification
+2. Successful medical check-up
+3. Submission of required documents
+
+Please confirm your acceptance of this offer by signing the attached offer letter and submitting it within 5 business days.
+
+Best regards,
+Human Resources Team</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('offerForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    });
+</script>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        border-radius: 8px;
+    }
+
+    .form-control {
+        border-radius: 4px;
+    }
+
+    pre {
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}
