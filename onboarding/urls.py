@@ -4,11 +4,17 @@ from . import views
 urlpatterns = [
     # Admin Views
     path('', views.onboarding_dashboard, name='onboarding_dashboard'),
+    path('admin/progress/', views.onboarding_progress_dashboard, name='onboarding_progress_dashboard'),
     path('employee/<int:employee_id>/invite/', views.send_invitation, name='send_invitation'),
     path('employee/<int:employee_id>/offer/', views.create_offer_letter, name='create_offer_letter'),
     path('employee/<int:employee_id>/documents/', views.document_verification, name='document_verification'),
     path('document/<int:document_id>/verify/', views.verify_document, name='verify_document'),
     path('employee/<int:employee_id>/checklist/', views.manage_onboarding_checklist, name='manage_onboarding_checklist'),
+
+    # Employee Login & Dashboard
+    path('employee/login/', views.employee_login, name='employee_login'),
+    path('employee/dashboard/', views.employee_dashboard, name='employee_dashboard'),
+    path('employee/logout/', views.employee_logout, name='employee_logout'),
 
     # Portal Views (New Joiner)
     path('join/<str:token>/', views.accept_invitation, name='accept_invitation'),

@@ -320,7 +320,38 @@ def accept_invitation(request, token):
     """
     New joiner accepts invitation and enters onboarding portal
     """
-    invitation = get_object_or_404(OnboardingInvitation, invitation_token=token)
+    # Clean token - remove any whitespace
+    token = str(token).strip()
+
+    # Debug: Log the token being searched
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"DEBUG: Searching for invitation with token: {token}")
+    logger.info(f"DEBUG: Token type: {type(token)}, Token length: {len(token)}")
+
+    # First, check if token exists in database
+    try:
+        all_invitations = OnboardingInvitation.objects.all()
+        logger.info(f"DEBUG: Total invitations in database: {all_invitations.count()}")
+
+        for inv in all_invitations[:5]:
+            logger.info(f"DEBUG: Invitation found - Token: {inv.invitation_token}, Status: {inv.status}")
+
+        invitation = OnboardingInvitation.objects.get(invitation_token=token)
+        logger.info(f"DEBUG: Invitation found successfully for token: {token}")
+    except OnboardingInvitation.DoesNotExist:
+        logger.error(f"DEBUG: No invitation found for token: {token}")
+        logger.error(f"DEBUG: Token value: '{token}', length: {len(token)}")
+
+        # Check if invitation exists with similar token
+        similar = OnboardingInvitation.objects.filter(invitation_token__icontains=token[:8]).first()
+        if similar:
+            logger.error(f"DEBUG: Found similar invitation with token starting with: {similar.invitation_token[:8]}")
+
+        raise Http404("Invitation not found. The link may have expired or is invalid.")
+    except Exception as e:
+        logger.exception(f"DEBUG: Exception during invitation lookup: {str(e)}")
+        raise
 
     # Verify token
     token_check = verify_token(token, invitation)
@@ -585,3 +616,213 @@ def invalid_token_view(request):
     Show message for invalid or expired tokens
     """
     return render(request, 'onboarding/portal/invalid_token.html')
+
+
+# ==================== EMPLOYEE LOGIN & DASHBOARD ====================
+
+@require_http_methods(["GET", "POST"])
+def employee_login(request):
+    """
+    Employee login to access onboarding portal
+    """
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        employee_id = request.POST.get('employee_id', '').strip()
+
+        try:
+            # Find employee by email and ID
+            employee = Employee.objects.filter(email=email, id=employee_id).first()
+
+            if employee:
+                # Check if invitation exists
+                invitation = OnboardingInvitation.objects.filter(
+                    employee=employee
+                ).order_by('-created_at').first()
+
+                if invitation:
+                    # Store in session
+                    request.session['employee_id'] = employee.id
+                    request.session['invitation_token'] = invitation.invitation_token
+                    request.session['employee_email'] = employee.email
+                    request.session['employee_name'] = employee.name
+
+                    messages.success(request, f"Welcome {employee.name}!")
+                    return redirect('employee_dashboard')
+                else:
+                    messages.error(request, "No active onboarding invitation found for this employee.")
+            else:
+                messages.error(request, "Employee not found. Please check your email and ID.")
+        except Exception as e:
+            logger.error(f"Login error: {str(e)}")
+            messages.error(request, "An error occurred during login. Please try again.")
+
+    return render(request, 'onboarding/employee/login.html')
+
+
+@require_http_methods(["GET"])
+def employee_dashboard(request):
+    """
+    Employee onboarding dashboard showing progress
+    """
+    if 'employee_id' not in request.session:
+        messages.warning(request, "Please login first.")
+        return redirect('employee_login')
+
+    employee_id = request.session.get('employee_id')
+    token = request.session.get('invitation_token')
+
+    try:
+        employee = Employee.objects.get(id=employee_id)
+        invitation = OnboardingInvitation.objects.filter(invitation_token=token).first()
+
+        if not invitation:
+            return redirect('employee_login')
+
+        # Get onboarding status
+        offer_letter = OfferLetter.objects.filter(employee=employee).order_by('-created_at').first()
+        documents = EmployeeDocument.objects.filter(employee=employee)
+        required_docs = DocumentRequirement.objects.filter(is_required=True)
+        checklists = OnboardingChecklist.objects.filter(employee=employee)
+
+        # Calculate progress
+        progress = 0
+        steps_completed = 0
+        total_steps = 4
+
+        # Step 1: Accept Invitation
+        if invitation.status == 'accepted':
+            progress += 25
+            steps_completed += 1
+            step1_complete = True
+        else:
+            step1_complete = False
+
+        # Step 2: Upload Documents
+        docs_uploaded = documents.filter(admin_verified=True).count()
+        if docs_uploaded >= required_docs.count() and required_docs.exists():
+            progress += 25
+            steps_completed += 1
+            step2_complete = True
+        else:
+            step2_complete = False
+
+        # Step 3: Review Offer Letter
+        if offer_letter and offer_letter.status == 'signed':
+            progress += 25
+            steps_completed += 1
+            step3_complete = True
+        else:
+            step3_complete = False
+
+        # Step 4: Day-1 Checklist
+        if checklists.exists() and checklists.filter(is_completed=True).count() == checklists.count():
+            progress += 25
+            steps_completed += 1
+            step4_complete = True
+        else:
+            step4_complete = False
+
+        context = {
+            'employee': employee,
+            'invitation': invitation,
+            'token': token,
+            'offer_letter': offer_letter,
+            'documents_count': documents.count(),
+            'verified_documents': docs_uploaded,
+            'total_documents': required_docs.count(),
+            'checklist_count': checklists.count(),
+            'completed_checklist': checklists.filter(is_completed=True).count(),
+            'progress': progress,
+            'step1_complete': step1_complete,
+            'step2_complete': step2_complete,
+            'step3_complete': step3_complete,
+            'step4_complete': step4_complete,
+            'steps_completed': steps_completed,
+            'total_steps': total_steps,
+        }
+
+        return render(request, 'onboarding/employee/dashboard.html', context)
+
+    except Employee.DoesNotExist:
+        messages.error(request, "Employee not found.")
+        return redirect('employee_login')
+
+
+@require_http_methods(["GET"])
+def employee_logout(request):
+    """
+    Employee logout
+    """
+    request.session.flush()
+    messages.success(request, "You have been logged out successfully.")
+    return redirect('employee_login')
+
+
+@login_required
+@require_http_methods(["GET"])
+def onboarding_progress_dashboard(request):
+    """
+    Admin dashboard showing overall onboarding progress for all employees
+    """
+    if not request.user.is_staff:
+        messages.error(request, "You do not have permission to access this page")
+        return redirect('home')
+
+    # Get all onboarding invitations
+    onboardings = OnboardingInvitation.objects.select_related('employee').order_by('-created_at')
+
+    # Statistics
+    total_invitations = onboardings.count()
+    accepted_invitations = onboardings.filter(status='accepted').count()
+    pending_invitations = onboardings.filter(status='pending').count()
+    sent_invitations = onboardings.filter(status='sent').count()
+
+    # Calculate progress for each employee
+    onboarding_list = []
+    for invitation in onboardings:
+        employee = invitation.employee
+
+        # Get documents
+        documents = EmployeeDocument.objects.filter(employee=employee)
+        verified_docs = documents.filter(admin_verified=True).count()
+        required_docs = DocumentRequirement.objects.filter(is_required=True).count()
+
+        # Get offer letter
+        offer_letter = OfferLetter.objects.filter(employee=employee).order_by('-created_at').first()
+
+        # Get checklist
+        checklists = OnboardingChecklist.objects.filter(employee=employee)
+        completed_checklists = checklists.filter(is_completed=True).count()
+
+        # Calculate progress
+        progress = 0
+        if invitation.status == 'accepted':
+            progress += 25
+        if verified_docs > 0:
+            progress += 25
+        if offer_letter and offer_letter.status == 'signed':
+            progress += 25
+        if completed_checklists > 0:
+            progress += 25
+
+        onboarding_list.append({
+            'invitation': invitation,
+            'employee': employee,
+            'verified_docs': verified_docs,
+            'total_docs': required_docs,
+            'offer_letter': offer_letter,
+            'checklists_completed': completed_checklists,
+            'total_checklists': checklists.count(),
+            'progress': progress,
+        })
+
+    context = {
+        'onboardings': onboarding_list,
+        'total_invitations': total_invitations,
+        'accepted_invitations': accepted_invitations,
+        'pending_invitations': pending_invitations,
+        'sent_invitations': sent_invitations,
+        'completed_invitations': onboardings.filter(status__in=['accepted']).count(),
+    }
+
+    return render(request, 'onboarding/admin/onboarding_dashboard.html', context)
