@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Onboarding Complete - Welcome!{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg" style="border: none;">
+                <div class="card-body p-5 text-center">
+                    <!-- Success Animation -->
+                    <div class="mb-4">
+                        <div style="font-size: 5rem; color: #28a745; animation: scaleIn 0.6s ease-in-out;">
+                            ✓
+                        </div>
+                    </div>
+
+                    <h1 class="card-title mb-2" style="color: #28a745; font-weight: 700;">
+                        Congratulations!
+                    </h1>
+
+                    <h3 class="text-muted mb-4">Your Onboarding is Complete</h3>
+
+                    <div class="alert alert-success mb-4" style="border: 2px solid #28a745;">
+                        <h5 class="alert-heading">Welcome Aboard, {{ employee.name }}!</h5>
+                        <p class="mb-0">
+                            You have successfully completed your onboarding process. You will receive your login credentials shortly via email.
+                        </p>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="row mb-5 text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Invitation Status</h6>
+                                    <h5 class="text-success">✓ Accepted</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Documents</h6>
+                                    <h5 class="text-success">✓ Submitted</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Offer Letter</h6>
+                                    <h5 class="text-success">✓ Signed</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title text-muted">Day-1 Checklist</h6>
+                                    <h5 class="text-success">✓ Completed</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">What's Next?</h5>
+                            <ol class="text-left mb-0">
+                                <li>Check your email for login credentials</li>
+                                <li>Log in to the HR system on your start date</li>
+                                <li>Attend your orientation session</li>
+                                <li>Meet your team and manager</li>
+                                <li>Get settled in and enjoy your first day!</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Your Details -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Employee Details</h5>
+                            <table class="table table-sm mb-0">
+                                <tr>
+                                    <td><strong>Name:</strong></td>
+                                    <td>{{ employee.name }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Employee ID:</strong></td>
+                                    <td>{{ employee.employee_id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Department:</strong></td>
+                                    <td>{{ employee.department.name|default:"N/A" }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Position:</strong></td>
+                                    <td>{{ employee.position }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Start Date:</strong></td>
+                                    <td>{{ employee.date_joined|date:"d B Y" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="card mb-4" style="border-left: 4px solid #007bff;">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Need Assistance?</h5>
+                            <p class="mb-2">If you have any questions before your start date, please contact our HR team:</p>
+                            <p class="mb-0">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <a href="mailto:hr@company.com">hr@company.com</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small">
+                        <p>Onboarding completed on: <strong>{{ "now"|date:"d M Y, H:i" }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes scaleIn {
+        from {
+            transform: scale(0);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+    }
+
+    .alert-success {
+        background-color: #d4edda !important;
+        color: #155724 !important;
+    }
+</style>
+{% endblock %}

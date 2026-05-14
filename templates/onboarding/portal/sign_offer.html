@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign Offer Letter - Onboarding{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-1">Review & Sign Offer Letter</h1>
+            <p class="text-muted">Please review your offer letter and provide your digital signature</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Offer Letter Preview -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Offer Letter</h5>
+                </div>
+                <div class="card-body">
+                    {% if offer_letter.pdf_file %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-file-pdf"></i>
+                            <a href="{{ offer_letter.pdf_file.url }}" target="_blank" class="alert-link">
+                                Download PDF Version
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 5px; border: 1px solid #ddd; max-height: 500px; overflow-y: auto;">
+                        {% if offer_letter.offer_content %}
+                            {{ offer_letter.offer_content|safe }}
+                        {% else %}
+                            <h5>Offer of Employment</h5>
+                            <p>Dear {{ employee.name }},</p>
+
+                            <p>We are pleased to extend an offer of employment to you for the position of <strong>{{ offer_letter.department }}</strong> in our esteemed organization.</p>
+
+                            <h6>Offer Details:</h6>
+                            <ul>
+                                <li><strong>Position:</strong> {{ offer_letter.department }}</li>
+                                <li><strong>Annual Salary:</strong> ₹{{ offer_letter.salary_amount|floatformat:2 }}</li>
+                                <li><strong>Start Date:</strong> {{ offer_letter.start_date|date:"d B Y" }}</li>
+                            </ul>
+
+                            <p>This offer is contingent upon successful completion of background verification and submission of required documents.</p>
+
+                            <p>Your employment will be governed by the terms and conditions outlined in the company policies and applicable laws.</p>
+
+                            <p>Yours sincerely,<br>Human Resources Department</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signature Form -->
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Provide Digital Signature</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="{{ form.signature_image.id_for_label }}" class="font-weight-bold">
+                                <i class="fas fa-signature"></i> Your Signature
+                            </label>
+                            <div class="custom-file">
+                                {{ form.signature_image }}
+                                <label class="custom-file-label" for="{{ form.signature_image.id_for_label }}">
+                                    Choose signature image...
+                                </label>
+                            </div>
+                            <small class="form-text text-muted d-block mt-2">
+                                Please upload a clear image of your signature. Supported formats: JPG, PNG (max 2 MB)
+                            </small>
+                            {% if form.signature_image.errors %}
+                                <div class="alert alert-danger mt-2 mb-0">
+                                    {{ form.signature_image.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                {{ form.agree_terms }}
+                                <label class="custom-control-label" for="{{ form.agree_terms.id_for_label }}">
+                                    I agree to the terms and conditions of this offer letter
+                                </label>
+                            </div>
+                            {% if form.agree_terms.errors %}
+                                <div class="alert alert-danger mt-2 mb-0">
+                                    {{ form.agree_terms.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-block btn-lg">
+                            <i class="fas fa-signature"></i> Sign & Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white font-weight-bold">
+                    <i class="fas fa-file-contract"></i> Offer Summary
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <td><strong>Position:</strong></td>
+                            <td>{{ offer_letter.department }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Salary:</strong></td>
+                            <td>₹{{ offer_letter.salary_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Start Date:</strong></td>
+                            <td>{{ offer_letter.start_date|date:"d M Y" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status:</strong></td>
+                            <td>
+                                <span class="badge badge-{{ offer_letter.status }}">
+                                    {{ offer_letter.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-warning text-dark font-weight-bold">
+                    <i class="fas fa-info-circle"></i> Instructions
+                </div>
+                <div class="card-body">
+                    <ol class="small mb-0">
+                        <li>Review the offer letter carefully</li>
+                        <li>Prepare a clear image of your signature</li>
+                        <li>Upload the signature image</li>
+                        <li>Check the agreement checkbox</li>
+                        <li>Click "Sign & Submit"</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const label = document.querySelector('.custom-file-label');
+                label.textContent = this.files[0] ? this.files[0].name : 'Choose signature image...';
+            });
+        }
+    });
+</script>
+{% endblock %}

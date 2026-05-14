@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Onboarding Dashboard - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-0">Employee Onboarding Dashboard</h1>
+            <p class="text-muted">Manage and track new joiner onboarding process</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Pending Invitations</h6>
+                            <p class="text-dark-50 mb-0">Invites not yet sent</p>
+                        </div>
+                        <h2 class="mb-0">{{ total_pending }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Invitations Sent</h6>
+                            <p class="text-white-50 mb-0">Awaiting acceptance</p>
+                        </div>
+                        <h2 class="mb-0">{{ total_sent }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Onboarding Complete</h6>
+                            <p class="text-white-50 mb-0">Successfully finished</p>
+                        </div>
+                        <h2 class="mb-0">{{ total_accepted }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Total Employees</h6>
+                            <p class="text-white-50 mb-0">In onboarding pipeline</p>
+                        </div>
+                        <h2 class="mb-0">{{ total_pending|add:total_sent|add:total_accepted }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Pending Invitations -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark font-weight-bold">
+                    <i class="fas fa-envelope"></i> Pending Invitations
+                </div>
+                <div class="card-body p-0">
+                    {% if pending_invitations %}
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Email</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inv in pending_invitations %}
+                                        <tr>
+                                            <td><strong>{{ inv.employee.name }}</strong></td>
+                                            <td><small>{{ inv.employee.email }}</small></td>
+                                            <td><small>{{ inv.created_at|date:"d M Y" }}</small></td>
+                                            <td>
+                                                <a href="{% url 'send_invitation' inv.employee.id %}" class="btn btn-xs btn-primary">
+                                                    <i class="fas fa-paper-plane"></i> Send
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3 mb-0">
+                            <i class="fas fa-info-circle"></i> No pending invitations
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recently Sent Invitations -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white font-weight-bold">
+                    <i class="fas fa-paper-plane"></i> Recently Sent Invitations
+                </div>
+                <div class="card-body p-0">
+                    {% if sent_invitations %}
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Sent On</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inv in sent_invitations %}
+                                        <tr>
+                                            <td><strong>{{ inv.employee.name }}</strong></td>
+                                            <td><small>{{ inv.email_sent_at|date:"d M Y, H:i" }}</small></td>
+                                            <td>
+                                                <span class="badge badge-info">
+                                                    <i class="fas fa-hourglass-half"></i> Awaiting
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'send_invitation' inv.employee.id %}" class="btn btn-outline-primary" title="Resend">
+                                                        <i class="fas fa-redo"></i>
+                                                    </a>
+                                                    <a href="{% url 'manage_onboarding_checklist' inv.employee.id %}" class="btn btn-outline-info" title="Manage">
+                                                        <i class="fas fa-cog"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3 mb-0">
+                            <i class="fas fa-info-circle"></i> No sent invitations
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completed Onboardings -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white font-weight-bold">
+                    <i class="fas fa-check-circle"></i> Completed Onboardings
+                </div>
+                <div class="card-body p-0">
+                    {% if accepted_invitations %}
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Employee ID</th>
+                                        <th>Department</th>
+                                        <th>Position</th>
+                                        <th>Completed On</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for inv in accepted_invitations %}
+                                        <tr>
+                                            <td><strong>{{ inv.employee.name }}</strong></td>
+                                            <td>{{ inv.employee.employee_id }}</td>
+                                            <td>{{ inv.employee.department.name|default:"N/A" }}</td>
+                                            <td>{{ inv.employee.position }}</td>
+                                            <td>{{ inv.accepted_at|date:"d M Y, H:i" }}</td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{% url 'document_verification' inv.employee.id %}" class="btn btn-outline-primary" title="View Documents">
+                                                        <i class="fas fa-file"></i>
+                                                    </a>
+                                                    <a href="{% url 'manage_onboarding_checklist' inv.employee.id %}" class="btn btn-outline-info" title="View Checklist">
+                                                        <i class="fas fa-tasks"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info m-3 mb-0">
+                            <i class="fas fa-info-circle"></i> No completed onboardings yet
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+        border-radius: 8px;
+    }
+
+    .btn-xs {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}

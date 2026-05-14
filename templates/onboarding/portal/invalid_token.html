@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invalid Token - Onboarding{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg" style="border: none;">
+                <div class="card-body p-5 text-center">
+                    <!-- Error Icon -->
+                    <div class="mb-4">
+                        <div style="font-size: 5rem; color: #dc3545;">
+                            ✕
+                        </div>
+                    </div>
+
+                    <h1 class="card-title mb-2" style="color: #dc3545; font-weight: 700;">
+                        Invalid or Expired Link
+                    </h1>
+
+                    <div class="alert alert-danger mb-4" style="border: 2px solid #dc3545;">
+                        <p class="mb-0">
+                            The invitation link you're trying to access is either invalid, has expired, or has already been used.
+                        </p>
+                    </div>
+
+                    <h5 class="text-muted mb-4">What can you do?</h5>
+
+                    <div class="row mb-5">
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-envelope text-primary"></i>
+                                        Request a New Link
+                                    </h6>
+                                    <p class="small mb-3">Contact HR to get a new invitation link</p>
+                                    <a href="mailto:hr@company.com" class="btn btn-sm btn-primary">
+                                        Send Email
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-phone text-success"></i>
+                                        Call HR
+                                    </h6>
+                                    <p class="small mb-3">Speak with our HR team directly</p>
+                                    <a href="tel:+1234567890" class="btn btn-sm btn-success">
+                                        Call Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Possible Reasons -->
+                    <div class="alert alert-info text-left">
+                        <h5 class="alert-heading">Why might this happen?</h5>
+                        <ul class="mb-0 pl-3">
+                            <li>The invitation link has expired (valid for 30 days)</li>
+                            <li>You may have already completed the onboarding</li>
+                            <li>The link might have been typed incorrectly</li>
+                            <li>The invitation might have been cancelled</li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="card bg-light mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Contact Information</h5>
+                            <p class="mb-2">
+                                <strong>Email:</strong>
+                                <a href="mailto:hr@company.com">hr@company.com</a>
+                            </p>
+                            <p class="mb-0">
+                                <strong>Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: none;
+    }
+</style>
+{% endblock %}

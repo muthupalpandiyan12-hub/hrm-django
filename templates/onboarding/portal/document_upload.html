@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Documents - Onboarding{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-1">Upload Required Documents</h1>
+            <p class="text-muted">Please upload all required documents for your onboarding process</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Required Documents List -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Required Documents</h5>
+                </div>
+                <div class="card-body">
+                    {% if required_documents %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Document Type</th>
+                                        <th>Status</th>
+                                        <th>Format</th>
+                                        <th>Max Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in required_documents %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ doc.name }}</strong>
+                                                {% if doc.description %}
+                                                    <br><small class="text-muted">{{ doc.description }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-warning">
+                                                    <i class="fas fa-hourglass-half"></i> Pending
+                                                </span>
+                                            </td>
+                                            <td><small>{{ doc.get_file_type_allowed_display }}</small></td>
+                                            <td><small>5 MB</small></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="mb-0 text-muted">All required documents have been uploaded!</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Uploaded Documents -->
+            {% if uploaded_documents %}
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-check-circle"></i> Uploaded Documents
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Document Type</th>
+                                        <th>Uploaded On</th>
+                                        <th>Verification Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in uploaded_documents %}
+                                        <tr>
+                                            <td><strong>{{ doc.document_type.name }}</strong></td>
+                                            <td>{{ doc.uploaded_at|date:"d M Y, H:i" }}</td>
+                                            <td>
+                                                {% if doc.admin_verified %}
+                                                    <span class="badge badge-success">
+                                                        <i class="fas fa-check"></i> Verified
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge badge-warning">
+                                                        <i class="fas fa-hourglass-half"></i> Pending Review
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-download"></i> Download
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Upload Form -->
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Upload New Document</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label for="{{ form.document_type.id_for_label }}" class="font-weight-bold">
+                                {{ form.document_type.label }}
+                            </label>
+                            {{ form.document_type }}
+                            {% if form.document_type.errors %}
+                                <div class="alert alert-danger mt-2 mb-0">
+                                    {{ form.document_type.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.file.id_for_label }}" class="font-weight-bold">
+                                {{ form.file.label }}
+                            </label>
+                            <div class="custom-file">
+                                {{ form.file }}
+                                <label class="custom-file-label" for="{{ form.file.id_for_label }}">
+                                    Choose file...
+                                </label>
+                            </div>
+                            <small class="form-text text-muted d-block mt-2">
+                                Accepted formats: PDF, JPG, PNG, DOC, DOCX | Max size: 5 MB
+                            </small>
+                            {% if form.file.errors %}
+                                <div class="alert alert-danger mt-2 mb-0">
+                                    {{ form.file.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-upload"></i> Upload Document
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark font-weight-bold">
+                    <i class="fas fa-info-circle"></i> Upload Instructions
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Select the document type from the dropdown</li>
+                        <li>Click "Choose file" to select your document</li>
+                        <li>Ensure the file is in PDF, JPG, PNG format</li>
+                        <li>Make sure file size is under 5 MB</li>
+                        <li>Click "Upload Document" to submit</li>
+                        <li>Our HR team will review and verify your documents</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-secondary text-white font-weight-bold">
+                    <i class="fas fa-list-check"></i> Progress
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Documents Uploaded:</strong> {{ uploaded_documents|length }}/{{ total_documents }}</p>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar" role="progressbar" style="width: {% widthratio uploaded_documents|length total_documents 100 %}%;" aria-valuenow="{{ uploaded_documents|length }}" aria-valuemin="0" aria-valuemax="{{ total_documents }}">
+                            {% widthratio uploaded_documents|length total_documents 100 %}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // File input label update
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.querySelector('input[type="file"]');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const label = document.querySelector('.custom-file-label');
+                label.textContent = this.files[0] ? this.files[0].name : 'Choose file...';
+            });
+        }
+    });
+</script>
+{% endblock %}

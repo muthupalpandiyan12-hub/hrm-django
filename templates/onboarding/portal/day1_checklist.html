@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Day-1 Checklist - Onboarding{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-1">Day-1 Onboarding Checklist</h1>
+            <p class="text-muted">Please complete all the items in this checklist to finalize your onboarding</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Onboarding Tasks</h5>
+                </div>
+                <div class="card-body">
+                    {% if checklist_items %}
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="list-group list-group-flush">
+                                {% for item in checklist_items %}
+                                    <div class="list-group-item px-0 py-3 {% if item.is_completed %}border-left border-success{% endif %}">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="task_{{ item.id }}_check" name="task_{{ item.id }}" value="on" {% if item.is_completed %}checked{% endif %}>
+                                            <label class="custom-control-label" for="task_{{ item.id }}_check">
+                                                <strong>{{ item.title }}</strong>
+                                                {% if item.is_completed %}
+                                                    <span class="badge badge-success ml-2">
+                                                        <i class="fas fa-check"></i> Completed
+                                                    </span>
+                                                {% endif %}
+                                            </label>
+                                        </div>
+                                        {% if item.description %}
+                                            <p class="mb-0 text-muted mt-2 ml-3">{{ item.description }}</p>
+                                        {% endif %}
+                                        {% if item.due_date %}
+                                            <small class="text-muted ml-3">
+                                                <i class="fas fa-calendar"></i>
+                                                Due: {{ item.due_date|date:"d M Y" }}
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-success btn-block">
+                                    <i class="fas fa-check-double"></i> Update Checklist
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Your HR team will add day-1 checklist items soon. Please check back later.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            {% if checklist_items %}
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white font-weight-bold">
+                        <i class="fas fa-chart-pie"></i> Progress
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Tasks Completed:</strong> {{ checklist_items|length|add:"-1"|default:"0" }}/{{ checklist_items|length }}</p>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" role="progressbar" style="width: {% if checklist_items %}{% widthratio checklist_items|length checklist_items|length 100 %}{% else %}0{% endif %}%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="{{ checklist_items|length }}">
+                                {% if checklist_items %}{% widthratio checklist_items|length checklist_items|length 100 %}{% endif %}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header bg-info text-white font-weight-bold">
+                    <i class="fas fa-lightbulb"></i> Tips
+                </div>
+                <div class="card-body">
+                    <ul class="small mb-0 pl-3">
+                        <li>Complete all tasks on time</li>
+                        <li>Ask questions if anything is unclear</li>
+                        <li>Get to know your team members</li>
+                        <li>Review company policies</li>
+                        <li>Set up your workspace</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

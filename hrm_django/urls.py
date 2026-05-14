@@ -15,5 +15,6 @@ urlpatterns = [
     path('punch/', include('punch.urls')),
     path('core/', include('core.urls')),
     path('performance/', include('performance.urls')),
+    path('onboarding/', include('onboarding.urls')),
     path('', include('userroles.urls')),
 ]
